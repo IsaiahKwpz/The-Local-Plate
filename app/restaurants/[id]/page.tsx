@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getRestaurantWithMenu, type MenuItemWithRating } from "@/lib/restaurants/queries";
@@ -42,13 +43,14 @@ export default async function RestaurantPage({
             <h2 className="mb-3 text-lg font-medium">{category}</h2>
             <ul className="flex flex-col gap-4">
               {categoryItems.map((item) => (
-                <li id={item.id} key={item.id} className="rounded border p-4 scroll-mt-20">
+                <li key={item.id} className="rounded border p-4">
                   <div className="flex items-baseline justify-between gap-4">
-                    <span
-                      className={`font-medium ${!item.is_active ? "text-gray-400 line-through" : ""}`}
+                    <Link
+                      href={`/menu-items/${item.id}`}
+                      className={`font-medium underline ${!item.is_active ? "text-gray-400" : ""}`}
                     >
                       {item.name}
-                    </span>
+                    </Link>
                     {item.price != null && (
                       <span className="text-sm text-gray-500">
                         ${item.price.toFixed(2)} {item.currency}

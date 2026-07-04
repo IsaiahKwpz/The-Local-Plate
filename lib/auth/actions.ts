@@ -9,6 +9,17 @@ export type AuthActionState = {
   success?: boolean;
 };
 
+// Only allow redirecting back to a relative in-app path (e.g. the item page
+// someone was on when prompted to sign in) - never an absolute/protocol-
+// relative URL, which would make this an open redirect.
+function safeRedirectTarget(formData: FormData): string {
+  const next = formData.get("next") as string | null;
+  if (next && next.startsWith("/") && !next.startsWith("//")) {
+    return next;
+  }
+  return "/";
+}
+
 export async function signUp(
   _prevState: AuthActionState,
   formData: FormData,
@@ -33,7 +44,7 @@ export async function signUp(
   }
 
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect(safeRedirectTarget(formData));
 }
 
 export async function signIn(
@@ -55,7 +66,7 @@ export async function signIn(
   }
 
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect(safeRedirectTarget(formData));
 }
 
 export async function signOut() {

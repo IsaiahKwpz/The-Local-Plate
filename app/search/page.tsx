@@ -61,10 +61,7 @@ export default async function SearchPage({
             {menuItems.map((item) => (
               <li key={item.id} className="rounded border p-4">
                 <div className="flex items-baseline justify-between gap-4">
-                  <Link
-                    href={`/restaurants/${item.restaurant_id}#${item.id}`}
-                    className="font-medium underline"
-                  >
+                  <Link href={`/menu-items/${item.id}`} className="font-medium underline">
                     {item.name}
                   </Link>
                   {item.price != null && (
