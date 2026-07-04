@@ -19,10 +19,18 @@ export async function SiteHeader() {
   }
 
   return (
-    <header className="flex items-center justify-between border-b px-6 py-4">
-      <Link href="/" className="font-semibold">
+    <header className="flex items-center justify-between gap-4 border-b px-6 py-4">
+      <Link href="/" className="font-semibold whitespace-nowrap">
         MenuRate
       </Link>
+      <form action="/search" method="GET" className="max-w-sm flex-1">
+        <input
+          type="search"
+          name="q"
+          placeholder="Search restaurants or dishes…"
+          className="w-full rounded border px-3 py-1.5 text-sm"
+        />
+      </form>
       <nav className="flex items-center gap-4 text-sm">
         {user ? (
           <>

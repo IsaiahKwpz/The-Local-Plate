@@ -42,7 +42,7 @@ export default async function RestaurantPage({
             <h2 className="mb-3 text-lg font-medium">{category}</h2>
             <ul className="flex flex-col gap-4">
               {categoryItems.map((item) => (
-                <li key={item.id} className="rounded border p-4">
+                <li id={item.id} key={item.id} className="rounded border p-4 scroll-mt-20">
                   <div className="flex items-baseline justify-between gap-4">
                     <span
                       className={`font-medium ${!item.is_active ? "text-gray-400 line-through" : ""}`}

@@ -428,7 +428,20 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      search_menu_items: {
+        Args: { search_query: string }
+        Returns: {
+          avg_score: number
+          category: string
+          currency: string
+          id: string
+          name: string
+          price: number
+          rating_count: number
+          restaurant_id: string
+          restaurant_name: string
+        }[]
+      }
     }
     Enums: {
       menu_item_status: "unverified" | "confirmed"
