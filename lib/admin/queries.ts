@@ -101,3 +101,28 @@ export async function getAllRestaurantsForMerge(admin: TypedClient) {
   if (error) throw error;
   return data;
 }
+
+// createdAtLabel is formatted here, server-side, once - the same
+// toLocaleString()-inside-a-Client-Component mistake that caused a
+// hydration bug in ReportRow (see the step-7 migration comment/commit)
+// applies to any admin row component that would otherwise format
+// created_at itself.
+export async function getPendingEdits(admin: TypedClient) {
+  const { data, error } = await admin
+    .from("pending_edits")
+    .select("*, menu_item:menu_items(name), user:profiles!pending_edits_user_id_fkey(display_name)")
+    .eq("status", "pending")
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return data.map((edit) => ({ ...edit, createdAtLabel: new Date(edit.created_at).toLocaleString() }));
+}
+
+export async function getPendingTags(admin: TypedClient) {
+  const { data, error } = await admin
+    .from("pending_tags")
+    .select("*, proposer:profiles!pending_tags_proposed_by_fkey(display_name)")
+    .eq("status", "pending")
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return data.map((tag) => ({ ...tag, createdAtLabel: new Date(tag.created_at).toLocaleString() }));
+}

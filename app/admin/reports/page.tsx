@@ -1,8 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getOpenReports, getAllRestaurantsForMerge } from "@/lib/admin/queries";
+import {
+  getOpenReports,
+  getAllRestaurantsForMerge,
+  getPendingEdits,
+  getPendingTags,
+} from "@/lib/admin/queries";
 import { ReportRow } from "@/components/admin/report-row";
 import { MergeForm } from "@/components/admin/merge-form";
+import { PendingEditRow } from "@/components/admin/pending-edit-row";
+import { PendingTagRow } from "@/components/admin/pending-tag-row";
 
 export default async function AdminReportsPage() {
   const supabase = await createClient();
@@ -33,9 +40,11 @@ export default async function AdminReportsPage() {
   }
 
   const admin = createAdminClient();
-  const [reports, restaurants] = await Promise.all([
+  const [reports, restaurants, pendingEdits, pendingTags] = await Promise.all([
     getOpenReports(admin),
     getAllRestaurantsForMerge(admin),
+    getPendingEdits(admin),
+    getPendingTags(admin),
   ]);
 
   return (
@@ -47,6 +56,28 @@ export default async function AdminReportsPage() {
         <ul className="mt-4 flex flex-col gap-4">
           {reports.map((report) => (
             <ReportRow key={report.id} report={report} />
+          ))}
+        </ul>
+      )}
+
+      <h2 className="mt-12 text-xl font-semibold">Pending edits</h2>
+      {pendingEdits.length === 0 ? (
+        <p className="mt-4 text-gray-500">No pending edits.</p>
+      ) : (
+        <ul className="mt-4 flex flex-col gap-4">
+          {pendingEdits.map((edit) => (
+            <PendingEditRow key={edit.id} edit={edit} />
+          ))}
+        </ul>
+      )}
+
+      <h2 className="mt-12 text-xl font-semibold">Pending tags</h2>
+      {pendingTags.length === 0 ? (
+        <p className="mt-4 text-gray-500">No pending tags.</p>
+      ) : (
+        <ul className="mt-4 flex flex-col gap-4">
+          {pendingTags.map((tag) => (
+            <PendingTagRow key={tag.id} tag={tag} />
           ))}
         </ul>
       )}

@@ -2,9 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getMenuItemDetail, getRatingsForItem, getUserRating } from "@/lib/ratings/queries";
+import { getAppliedTagsForItem, getAvailableTagsForItem } from "@/lib/contributions/queries";
 import { RatingBadge } from "@/components/rating-badge";
 import { RatingForm } from "@/components/rating-form";
 import { ReportButton } from "@/components/report-button";
+import { TagSection } from "@/components/tag-section";
+import { EditItemForm } from "@/components/edit-item-form";
 
 export default async function MenuItemPage({
   params,
@@ -23,7 +26,14 @@ export default async function MenuItemPage({
       data: { user },
     },
     ratings,
-  ] = await Promise.all([supabase.auth.getUser(), getRatingsForItem(supabase, itemId)]);
+    appliedTags,
+    availableTags,
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    getRatingsForItem(supabase, itemId),
+    getAppliedTagsForItem(supabase, itemId),
+    getAvailableTagsForItem(supabase, itemId),
+  ]);
 
   const userRating = user ? await getUserRating(supabase, itemId, user.id) : null;
   const isChain = restaurant.type === "chain" && restaurant.brand !== null;
@@ -60,6 +70,25 @@ export default async function MenuItemPage({
           currentPath={`/menu-items/${item.id}`}
         />
       </div>
+
+      <section className="mt-6">
+        <h2 className="mb-3 text-lg font-medium">Tags</h2>
+        {user ? (
+          <TagSection menuItemId={item.id} appliedTags={appliedTags} availableTags={availableTags} />
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {appliedTags.length === 0 ? (
+              <span className="text-sm text-gray-500">No tags yet.</span>
+            ) : (
+              appliedTags.map((tag) => (
+                <span key={tag.id} className="rounded bg-gray-100 px-2 py-0.5 text-xs">
+                  {tag.name}
+                </span>
+              ))
+            )}
+          </div>
+        )}
+      </section>
 
       <section className="mt-8">
         <h2 className="mb-3 text-lg font-medium">Rate this</h2>
@@ -110,6 +139,20 @@ export default async function MenuItemPage({
               </li>
             ))}
           </ul>
+        )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="mb-3 text-lg font-medium">Suggest an edit</h2>
+        {user ? (
+          <EditItemForm menuItemId={item.id} item={item} />
+        ) : (
+          <p className="text-sm text-gray-600">
+            <Link href={`/login?next=/menu-items/${item.id}`} className="underline">
+              Sign in
+            </Link>{" "}
+            to suggest an edit.
+          </p>
         )}
       </section>
     </main>

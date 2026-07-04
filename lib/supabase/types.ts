@@ -179,6 +179,115 @@ export type Database = {
           },
         ]
       }
+      pending_edits: {
+        Row: {
+          created_at: string
+          field: string
+          id: string
+          menu_item_id: string
+          new_value: string
+          old_value: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["edit_status"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          field: string
+          id?: string
+          menu_item_id: string
+          new_value: string
+          old_value?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["edit_status"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          field?: string
+          id?: string
+          menu_item_id?: string
+          new_value?: string
+          old_value?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["edit_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_edits_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_edits_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_edits_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pending_tags: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          proposed_by: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["edit_status"]
+          type: Database["public"]["Enums"]["tag_type"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          proposed_by: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["edit_status"]
+          type: Database["public"]["Enums"]["tag_type"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          proposed_by?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["edit_status"]
+          type?: Database["public"]["Enums"]["tag_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_tags_proposed_by_fkey"
+            columns: ["proposed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_tags_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -435,6 +544,7 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: undefined
       }
+      is_low_trust: { Args: { target_user_id: string }; Returns: boolean }
       merge_restaurants: {
         Args: { duplicate_id: string; primary_id: string }
         Returns: undefined
@@ -455,6 +565,7 @@ export type Database = {
       }
     }
     Enums: {
+      edit_status: "pending" | "approved" | "rejected"
       menu_item_status: "unverified" | "confirmed"
       report_status: "open" | "dismissed" | "removed"
       report_target_type: "menu_item" | "restaurant" | "rating"
@@ -592,6 +703,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      edit_status: ["pending", "approved", "rejected"],
       menu_item_status: ["unverified", "confirmed"],
       report_status: ["open", "dismissed", "removed"],
       report_target_type: ["menu_item", "restaurant", "rating"],
