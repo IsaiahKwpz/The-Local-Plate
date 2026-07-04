@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"C:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\"; npm run lint; npm run build)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"C:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\"; Start-Process -FilePath \"cmd.exe\" -ArgumentList \"/c\",\"npm run dev > dev-out.log 2>&1\" -WindowStyle Hidden -PassThru | Select-Object -ExpandProperty Id)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"C:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\"; node verify-search.mjs)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"C:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\"; node verify-debug4.mjs)",
+      "Bash(git commit -m ' *)",
+      "Bash(mkdir -p \"c:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\\\\lib\\\\ratings\" \"c:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\\\\app\\\\menu-items\\\\[itemId]\")",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"C:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\"; node verify-rating.mjs)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.json','utf8'\\)\\); console.log\\('valid json'\\)\")",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"C:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\"; echo Y | npx supabase db push 2>&1)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"C:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\"; npm run db:types)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"C:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\"; node verify-integrity.mjs)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"C:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\"; node verify-integrity-ui.mjs)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\IsaiahK\\Documents\\Personal\\MenuRate.Com\\app\\menu-items"
+    ]
+  }
+}
