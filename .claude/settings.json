@@ -13,7 +13,12 @@
       "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"C:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\"; echo Y | npx supabase db push 2>&1)",
       "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"C:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\"; npm run db:types)",
       "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"C:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\"; node verify-integrity.mjs)",
-      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"C:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\"; node verify-integrity-ui.mjs)"
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"C:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\"; node verify-integrity-ui.mjs)",
+      "Bash(git ls-remote *)",
+      "Bash(git push *)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"C:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\"; node verify-reports.mjs)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"C:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\"; node verify-debug5.mjs)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"C:\\\\Users\\\\IsaiahK\\\\Documents\\\\Personal\\\\MenuRate.Com\"; node verify-devissue.mjs)"
     ],
     "additionalDirectories": [
       "c:\\Users\\IsaiahK\\Documents\\Personal\\MenuRate.Com\\app\\menu-items"

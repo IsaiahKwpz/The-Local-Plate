@@ -184,18 +184,21 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          is_admin: boolean
           trust_score: number
         }
         Insert: {
           created_at?: string
           display_name?: string | null
           id: string
+          is_admin?: boolean
           trust_score?: number
         }
         Update: {
           created_at?: string
           display_name?: string | null
           id?: string
+          is_admin?: boolean
           trust_score?: number
         }
         Relationships: []
@@ -428,6 +431,14 @@ export type Database = {
       }
     }
     Functions: {
+      decrement_trust_score: {
+        Args: { target_user_id: string }
+        Returns: undefined
+      }
+      merge_restaurants: {
+        Args: { duplicate_id: string; primary_id: string }
+        Returns: undefined
+      }
       search_menu_items: {
         Args: { search_query: string }
         Returns: {

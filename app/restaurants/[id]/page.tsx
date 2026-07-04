@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getRestaurantWithMenu, type MenuItemWithRating } from "@/lib/restaurants/queries";
 import { RatingBadge } from "@/components/rating-badge";
+import { ReportButton } from "@/components/report-button";
 
 export default async function RestaurantPage({
   params,
@@ -15,6 +16,10 @@ export default async function RestaurantPage({
   const result = await getRestaurantWithMenu(supabase, id).catch(() => null);
   if (!result) notFound();
   const { restaurant, items } = result;
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const categories = new Map<string, MenuItemWithRating[]>();
   for (const item of items) {
@@ -34,6 +39,14 @@ export default async function RestaurantPage({
           {restaurant.status.replace("_", " ")}
         </span>
       )}
+      <div className="mt-2">
+        <ReportButton
+          targetType="restaurant"
+          targetId={restaurant.id}
+          isSignedIn={!!user}
+          currentPath={`/restaurants/${restaurant.id}`}
+        />
+      </div>
 
       {items.length === 0 ? (
         <p className="mt-8 text-gray-500">No menu items yet.</p>

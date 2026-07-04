@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getMenuItemDetail, getRatingsForItem, getUserRating } from "@/lib/ratings/queries";
 import { RatingBadge } from "@/components/rating-badge";
 import { RatingForm } from "@/components/rating-form";
+import { ReportButton } from "@/components/report-button";
 
 export default async function MenuItemPage({
   params,
@@ -51,6 +52,15 @@ export default async function MenuItemPage({
         )}
       </div>
 
+      <div className="mt-2">
+        <ReportButton
+          targetType="menu_item"
+          targetId={item.id}
+          isSignedIn={!!user}
+          currentPath={`/menu-items/${item.id}`}
+        />
+      </div>
+
       <section className="mt-8">
         <h2 className="mb-3 text-lg font-medium">Rate this</h2>
         {user ? (
@@ -89,6 +99,14 @@ export default async function MenuItemPage({
                   </span>
                 </div>
                 {r.comment && <p className="mt-1 text-sm text-gray-600">{r.comment}</p>}
+                <div className="mt-2">
+                  <ReportButton
+                    targetType="rating"
+                    targetId={r.id}
+                    isSignedIn={!!user}
+                    currentPath={`/menu-items/${item.id}`}
+                  />
+                </div>
               </li>
             ))}
           </ul>
