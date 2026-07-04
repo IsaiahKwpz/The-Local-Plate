@@ -393,7 +393,39 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      brand_item_ratings: {
+        Row: {
+          avg_score: number | null
+          brand_id: string | null
+          item_name: string | null
+          rating_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurants_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_item_ratings: {
+        Row: {
+          avg_score: number | null
+          menu_item_id: string | null
+          rating_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ratings_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never
