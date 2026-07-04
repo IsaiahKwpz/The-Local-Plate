@@ -48,8 +48,11 @@ npm run db:types    # regenerate lib/supabase/types.ts from the linked project
 - `npm run dev` — start the dev server
 - `npm run build` / `npm run start` — production build/run
 - `npm run lint` — ESLint
+- `npm run scrape` — run the standalone scraper (`scraper/`) against the URLs in
+  `scraper/sources.mjs`
 
 ## Build order
 
 Being built incrementally per spec Section 11 (schema/auth first, then discovery, search, ratings,
-integrity, reporting, contributions, scraper, claim flow, photo moderation).
+integrity, reporting, contributions, scraper, claim flow, photo moderation). See
+[`docs/build-progress.md`](docs/build-progress.md) for what's done, what's left, and known gaps.
