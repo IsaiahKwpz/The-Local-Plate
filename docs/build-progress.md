@@ -125,7 +125,7 @@ both pending-photo review and photo reports, since judging an image requires see
 ## Live infrastructure
 
 - **Database/Auth/Storage**: Supabase project `menurate-production`
-- **Source control**: [github.com/IsaiahKwpz/TheLocalPlate.Com](https://github.com/IsaiahKwpz/TheLocalPlate.Com)
+- **Source control**: [github.com/IsaiahKwpz/The-Local-Plate](https://github.com/IsaiahKwpz/The-Local-Plate)
   (renamed from MenuRate.Com post-v1.0 — see `post-mvp.md`)
 - **Hosting**: none yet — the app only runs via `npm run dev` on localhost. Deploying (Railway
   per spec Section 8) hasn't come up as a Build Order step; worth doing whenever you want this

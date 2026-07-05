@@ -16,7 +16,7 @@ import { geocode } from "./geocode.mjs";
 import { createScraperClient, ingestRestaurant } from "./ingest.mjs";
 import { fetchRenderedHtml, closeBrowser } from "./browser.mjs";
 
-export const USER_AGENT = "TheLocalPlateScraper/0.1 (+https://github.com/IsaiahKwpz/TheLocalPlate.Com)";
+export const USER_AGENT = "TheLocalPlateScraper/0.1 (+https://github.com/IsaiahKwpz/The-Local-Plate)";
 
 export function loadEnv() {
   return Object.fromEntries(
