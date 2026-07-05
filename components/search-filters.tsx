@@ -4,6 +4,7 @@ const RADIUS_OPTIONS = [1, 2, 5, 10, 20];
 export function SearchFilters({
   q,
   tags,
+  dietTags,
   minPrice,
   maxPrice,
   minRating,
@@ -13,6 +14,7 @@ export function SearchFilters({
 }: {
   q?: string;
   tags?: string;
+  dietTags?: string;
   minPrice?: string;
   maxPrice?: string;
   minRating?: string;
@@ -24,12 +26,14 @@ export function SearchFilters({
   const clearParams = new URLSearchParams();
   if (q) clearParams.set("q", q);
   if (tags) clearParams.set("tags", tags);
+  if (dietTags) clearParams.set("dietTags", dietTags);
   const clearHref = clearParams.toString() ? `/search?${clearParams.toString()}` : "/search";
 
   return (
     <form method="get" action="/search" className="flex flex-col gap-4">
       {q && <input type="hidden" name="q" value={q} />}
       {tags && <input type="hidden" name="tags" value={tags} />}
+      {dietTags && <input type="hidden" name="dietTags" value={dietTags} />}
 
       <div>
         <h3 className="mb-2 text-sm font-medium text-ink-soft">Near an address</h3>

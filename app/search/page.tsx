@@ -29,6 +29,7 @@ export default async function SearchPage({
   searchParams: Promise<{
     q?: string;
     tags?: string;
+    dietTags?: string;
     minPrice?: string;
     maxPrice?: string;
     minRating?: string;
@@ -36,15 +37,20 @@ export default async function SearchPage({
     radiusKm?: string;
   }>;
 }) {
-  const { q, tags, minPrice, maxPrice, minRating, address, radiusKm } = await searchParams;
+  const { q, tags, dietTags, minPrice, maxPrice, minRating, address, radiusKm } = await searchParams;
   const query = q?.trim() ?? "";
   const tagIds = tags ? tags.split(",").filter(Boolean) : [];
-  const hasSearch = query.length > 0 || tagIds.length > 0;
+  const dietTagIds = dietTags ? dietTags.split(",").filter(Boolean) : [];
+  const hasTagFilter = tagIds.length > 0 || dietTagIds.length > 0;
+  const hasSearch = query.length > 0 || hasTagFilter;
   const trimmedAddress = address?.trim() ?? "";
   const hasFilters = Boolean(minPrice || maxPrice || minRating || trimmedAddress);
   const showResults = hasSearch || hasFilters;
   const supabase = await createClient();
-  const categories = await getBrowseCategories(supabase);
+  const [categories, dietCategories] = await Promise.all([
+    getBrowseCategories(supabase),
+    getBrowseCategories(supabase, "attribute"),
+  ]);
 
   let restaurants: Awaited<ReturnType<typeof searchRestaurants>> = [];
   let groups: ReturnType<typeof groupSearchResults> = [];
@@ -79,8 +85,8 @@ export default async function SearchPage({
     let rawMenuItems: MenuItemSearchResult[];
     if (hasSearch) {
       const [restaurantsResult, itemsResult] = await Promise.all([
-        tagIds.length > 0 ? Promise.resolve([]) : searchRestaurants(supabase, query),
-        tagIds.length > 0 ? searchMenuItemsByTags(supabase, tagIds) : searchMenuItems(supabase, query),
+        hasTagFilter ? Promise.resolve([]) : searchRestaurants(supabase, query),
+        hasTagFilter ? searchMenuItemsByTags(supabase, tagIds, dietTagIds) : searchMenuItems(supabase, query),
       ]);
       restaurants = restaurantIdFilter
         ? restaurantsResult.filter((r) => restaurantIdFilter!.has(r.id))
@@ -102,13 +108,12 @@ export default async function SearchPage({
     brandRatings = await getBrandItemRatings(supabase, brandIds);
   }
 
-  const heading =
-    tagIds.length > 0
-      ? categories
-          .filter((c) => tagIds.includes(c.id))
-          .map((c) => c.name)
-          .join(", ")
-      : query;
+  const selectedTagNames = [
+    ...categories.filter((c) => tagIds.includes(c.id)),
+    ...dietCategories.filter((c) => dietTagIds.includes(c.id)),
+  ].map((c) => c.name);
+
+  const heading = selectedTagNames.length > 0 ? selectedTagNames.join(", ") : query;
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
@@ -133,21 +138,48 @@ export default async function SearchPage({
             </h2>
             <CategorySidebar
               categories={categories}
-              activeTagIds={tagIds}
+              activeIds={tagIds}
+              paramName="tags"
+              placeholder="Filter categories..."
+              clearLabel="Clear categories"
               minPrice={minPrice}
               maxPrice={maxPrice}
               minRating={minRating}
               address={address}
               radiusKm={radiusKm}
+              otherFacetParam="dietTags"
+              otherFacetValue={dietTagIds.length > 0 ? dietTagIds.join(",") : undefined}
             />
           </div>
+          {dietCategories.length > 0 && (
+            <div>
+              <h2 className="mb-2 font-display text-sm font-bold uppercase tracking-wide text-ink-soft">
+                Dietary
+              </h2>
+              <CategorySidebar
+                categories={dietCategories}
+                activeIds={dietTagIds}
+                paramName="dietTags"
+                placeholder="Filter dietary tags..."
+                clearLabel="Clear dietary tags"
+                minPrice={minPrice}
+                maxPrice={maxPrice}
+                minRating={minRating}
+                address={address}
+                radiusKm={radiusKm}
+                otherFacetParam="tags"
+                otherFacetValue={tagIds.length > 0 ? tagIds.join(",") : undefined}
+              />
+            </div>
+          )}
           <div>
             <h2 className="mb-2 font-display text-sm font-bold uppercase tracking-wide text-ink-soft">
               Filters
             </h2>
             <SearchFilters
-              q={tagIds.length > 0 ? undefined : query}
+              q={hasTagFilter ? undefined : query}
               tags={tagIds.length > 0 ? tagIds.join(",") : undefined}
+              dietTags={dietTagIds.length > 0 ? dietTagIds.join(",") : undefined}
               minPrice={minPrice}
               maxPrice={maxPrice}
               minRating={minRating}
@@ -219,7 +251,7 @@ export default async function SearchPage({
             </>
           )}
 
-          {hasSearch && tagIds.length === 0 && (
+          {hasSearch && !hasTagFilter && (
             <section>
               <h2 className="mb-3 font-display text-lg font-bold">Restaurants</h2>
               {restaurants.length === 0 ? (

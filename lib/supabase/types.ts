@@ -746,7 +746,7 @@ export type Database = {
         }[]
       }
       search_menu_items_by_tags: {
-        Args: { target_tag_ids: string[] }
+        Args: { category_tag_ids: string[]; diet_tag_ids?: string[] }
         Returns: {
           avg_score: number
           brand_id: string

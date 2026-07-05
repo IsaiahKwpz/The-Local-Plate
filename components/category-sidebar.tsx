@@ -3,67 +3,71 @@
 import { useState } from "react";
 import Link from "next/link";
 
-function buildTagHref(
-  nextTagIds: string[],
-  extraParams: {
-    minPrice?: string;
-    maxPrice?: string;
-    minRating?: string;
-    address?: string;
-    radiusKm?: string;
-  },
-) {
+function buildTagHref(paramName: string, nextIds: string[], extraParams: Record<string, string | undefined>) {
   const params = new URLSearchParams();
-  if (nextTagIds.length > 0) params.set("tags", nextTagIds.join(","));
-  if (extraParams.minPrice) params.set("minPrice", extraParams.minPrice);
-  if (extraParams.maxPrice) params.set("maxPrice", extraParams.maxPrice);
-  if (extraParams.minRating) params.set("minRating", extraParams.minRating);
-  if (extraParams.address) params.set("address", extraParams.address);
-  if (extraParams.radiusKm) params.set("radiusKm", extraParams.radiusKm);
+  if (nextIds.length > 0) params.set(paramName, nextIds.join(","));
+  for (const [key, value] of Object.entries(extraParams)) {
+    if (value) params.set(key, value);
+  }
   const query = params.toString();
   return query ? `/search?${query}` : "/search";
 }
 
+// Generic faceted tag picker - used for both the dish-category facet
+// (paramName="tags") and the dietary facet (paramName="dietTags"). Each
+// instance preserves the OTHER facet's current selection via
+// otherFacetParam/otherFacetValue, so toggling one doesn't clear the other -
+// the two facets combine as AND (category AND diet), OR within each.
 export function CategorySidebar({
   categories,
-  activeTagIds = [],
+  activeIds = [],
+  paramName = "tags",
+  placeholder = "Filter categories...",
+  clearLabel = "Clear categories",
   minPrice,
   maxPrice,
   minRating,
   address,
   radiusKm,
+  otherFacetParam,
+  otherFacetValue,
 }: {
   categories: { id: string; name: string; count: number }[];
-  activeTagIds?: string[];
+  activeIds?: string[];
+  paramName?: string;
+  placeholder?: string;
+  clearLabel?: string;
   minPrice?: string;
   maxPrice?: string;
   minRating?: string;
   address?: string;
   radiusKm?: string;
+  otherFacetParam?: string;
+  otherFacetValue?: string;
 }) {
   const [filterText, setFilterText] = useState("");
 
   if (categories.length === 0) return null;
 
-  const extraParams = { minPrice, maxPrice, minRating, address, radiusKm };
-  const toggleHref = (categoryId: string) => {
-    const isActive = activeTagIds.includes(categoryId);
-    const nextIds = isActive
-      ? activeTagIds.filter((id) => id !== categoryId)
-      : [...activeTagIds, categoryId];
-    return buildTagHref(nextIds, extraParams);
+  const extraParams: Record<string, string | undefined> = { minPrice, maxPrice, minRating, address, radiusKm };
+  if (otherFacetParam) extraParams[otherFacetParam] = otherFacetValue;
+
+  const toggleHref = (id: string) => {
+    const isActive = activeIds.includes(id);
+    const nextIds = isActive ? activeIds.filter((x) => x !== id) : [...activeIds, id];
+    return buildTagHref(paramName, nextIds, extraParams);
   };
 
   const query = filterText.trim().toLowerCase();
   const visibleCategories = categories.filter(
-    (category) => activeTagIds.includes(category.id) || category.name.toLowerCase().includes(query),
+    (category) => activeIds.includes(category.id) || category.name.toLowerCase().includes(query),
   );
 
   return (
     <div className="flex flex-col gap-2">
-      {activeTagIds.length > 0 && (
-        <Link href={buildTagHref([], extraParams)} className="self-start text-xs text-ink-soft underline">
-          Clear categories
+      {activeIds.length > 0 && (
+        <Link href={buildTagHref(paramName, [], extraParams)} className="self-start text-xs text-ink-soft underline">
+          {clearLabel}
         </Link>
       )}
 
@@ -71,7 +75,7 @@ export function CategorySidebar({
         type="text"
         value={filterText}
         onChange={(e) => setFilterText(e.target.value)}
-        placeholder="Filter categories..."
+        placeholder={placeholder}
         className="w-full rounded border border-rule bg-surface px-2 py-1 text-sm"
       />
 
@@ -80,7 +84,7 @@ export function CategorySidebar({
           <p className="px-1 py-1 text-sm text-ink-soft">No matching categories.</p>
         ) : (
           visibleCategories.map((category) => {
-            const isActive = activeTagIds.includes(category.id);
+            const isActive = activeIds.includes(category.id);
             return (
               <Link
                 key={category.id}

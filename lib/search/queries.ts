@@ -98,13 +98,19 @@ export async function getBrowseCategories(supabase: TypedClient, tagType: "dish_
 // that many UUIDs in a PostgREST .in() filter produces a request URL that
 // exceeds the HTTP header size limit. Doing the join in the database (see
 // migration 20260713000000/20260714000000) avoids ever shipping a large ID
-// list at all. Takes an array so the sidebar can select multiple categories
-// at once (OR match, deduped in the RPC).
+// list at all. categoryTagIds and dietTagIds are separate facets - OR within
+// each (picking Vegan + Vegetarian means either), AND across the two
+// (picking Vegan + Pizza means both), matching how faceted filters are
+// normally expected to combine.
 export async function searchMenuItemsByTags(
   supabase: TypedClient,
-  tagIds: string[],
+  categoryTagIds: string[],
+  dietTagIds: string[] = [],
 ): Promise<MenuItemSearchResult[]> {
-  const { data, error } = await supabase.rpc("search_menu_items_by_tags", { target_tag_ids: tagIds });
+  const { data, error } = await supabase.rpc("search_menu_items_by_tags", {
+    category_tag_ids: categoryTagIds,
+    diet_tag_ids: dietTagIds,
+  });
   if (error) throw error;
   return data;
 }
