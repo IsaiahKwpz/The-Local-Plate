@@ -3,14 +3,11 @@ import type { Database } from "@/lib/supabase/types";
 
 type TypedClient = SupabaseClient<Database>;
 
+// Fuzzy via word_similarity (see migration 20260715000000) so a typo or a
+// missing apostrophe ("moxies" for "Moxie's") still finds a match instead
+// of requiring an exact substring.
 export async function searchRestaurants(supabase: TypedClient, query: string) {
-  const { data, error } = await supabase
-    .from("restaurants")
-    .select("id, name, address, type, status")
-    .ilike("name", `%${query}%`)
-    .order("name")
-    .limit(50);
-
+  const { data, error } = await supabase.rpc("search_restaurants", { search_query: query });
   if (error) throw error;
   return data;
 }

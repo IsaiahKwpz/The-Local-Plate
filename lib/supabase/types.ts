@@ -708,6 +708,16 @@ export type Database = {
           restaurant_name: string
         }[]
       }
+      search_restaurants: {
+        Args: { search_query: string }
+        Returns: {
+          address: string
+          id: string
+          name: string
+          status: string
+          type: string
+        }[]
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
