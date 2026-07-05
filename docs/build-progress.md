@@ -1,9 +1,24 @@
-# Build Progress
+# Build Progress — MVP v1.0
 
 Tracks progress against the Build Order in [`menurate-spec.md`](menurate-spec.md) Section 11.
 Updated as steps complete — see git history for full detail on each one.
 
-## Status: 11 of 11 steps complete
+## Status: 11 of 11 steps complete — MVP v1.0
+
+All 11 Build Order steps are done, verified (typecheck/lint clean, each step driven end-to-end with
+Playwright against the real dev server and live Supabase project), and committed. The app runs
+locally against a real, non-trivial dataset: **59 real Ottawa-area restaurants and ~5,791 real menu
+items**, sourced from official restaurant sites only — no aggregators, nothing fabricated. Every
+core loop from the spec works end-to-end: discover a restaurant → search by dish or name → rate a
+specific menu item → report bad content → admin moderates → users contribute edits/tags/photos
+(trust-gated, or live for a verified owner) → owners claim and manage their own listing.
+
+What "MVP v1.0" means here: the full data model, auth, discovery, search, rating, moderation,
+contribution, scraping, claim, and photo-upload skeleton from the spec exists and is provably
+correct. It does **not** mean deployed, styled, or launch-ready — see "Known gaps" below, and
+[`post-mvp.md`](post-mvp.md) for what's tracked next (UI/theme work, deployment, and anything else
+that comes after this point). This file is now a historical record of how the MVP was built, not a
+live to-do list — new work gets tracked in `post-mvp.md` instead.
 
 ### ✅ Step 1 — Schema + Supabase setup
 Full Section 7 data model as Supabase migrations (profiles, brands, restaurants, menu_items, tags,
