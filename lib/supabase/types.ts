@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -682,6 +682,20 @@ export type Database = {
       }
       search_menu_items_by_tag: {
         Args: { target_tag_id: string }
+        Returns: {
+          avg_score: number
+          category: string
+          currency: string
+          id: string
+          name: string
+          price: number
+          rating_count: number
+          restaurant_id: string
+          restaurant_name: string
+        }[]
+      }
+      search_menu_items_by_tags: {
+        Args: { target_tag_ids: string[] }
         Returns: {
           avg_score: number
           category: string

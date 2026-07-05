@@ -63,14 +63,28 @@ export async function getBrowseCategories(supabase: TypedClient) {
 // that broke for any popular tag - "Pizza" alone matches 115+ items, and
 // that many UUIDs in a PostgREST .in() filter produces a request URL that
 // exceeds the HTTP header size limit. Doing the join in the database (see
-// migration 20260713000000) avoids ever shipping a large ID list at all.
-export async function searchMenuItemsByTag(
+// migration 20260713000000/20260714000000) avoids ever shipping a large ID
+// list at all. Takes an array so the sidebar can select multiple categories
+// at once (OR match, deduped in the RPC).
+export async function searchMenuItemsByTags(
   supabase: TypedClient,
-  tagId: string,
+  tagIds: string[],
 ): Promise<MenuItemSearchResult[]> {
-  const { data, error } = await supabase.rpc("search_menu_items_by_tag", { target_tag_id: tagId });
+  const { data, error } = await supabase.rpc("search_menu_items_by_tags", { target_tag_ids: tagIds });
   if (error) throw error;
   return data;
+}
+
+export function filterMenuItems(
+  items: MenuItemSearchResult[],
+  filters: { minPrice?: number; maxPrice?: number; minRating?: number },
+): MenuItemSearchResult[] {
+  return items.filter((item) => {
+    if (filters.minPrice != null && (item.price == null || item.price < filters.minPrice)) return false;
+    if (filters.maxPrice != null && (item.price == null || item.price > filters.maxPrice)) return false;
+    if (filters.minRating != null && (item.avg_score == null || item.avg_score < filters.minRating)) return false;
+    return true;
+  });
 }
 
 export function groupByRestaurant(items: MenuItemSearchResult[]) {
