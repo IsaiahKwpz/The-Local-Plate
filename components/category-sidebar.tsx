@@ -2,7 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { buildTagHref } from "@/components/browse-categories";
+
+function buildTagHref(
+  nextTagIds: string[],
+  extraParams: { minPrice?: string; maxPrice?: string; minRating?: string },
+) {
+  const params = new URLSearchParams();
+  if (nextTagIds.length > 0) params.set("tags", nextTagIds.join(","));
+  if (extraParams.minPrice) params.set("minPrice", extraParams.minPrice);
+  if (extraParams.maxPrice) params.set("maxPrice", extraParams.maxPrice);
+  if (extraParams.minRating) params.set("minRating", extraParams.minRating);
+  const query = params.toString();
+  return query ? `/search?${query}` : "/search";
+}
 
 export function CategorySidebar({
   categories,
