@@ -55,6 +55,16 @@ Step 3, this just finishes surfacing that grouping in search. Independent (non-c
 are unaffected — search still goes straight to their detail page. Real scope: updated search query
 to match brands, plus a new brand-landing page/route — not just a styling change.
 
+### Dietary restriction filtering / "top dishes for X restriction"
+Idea only, not started — raised 2026-07-05, deliberately deferred for later. Fits the `tags` table's
+existing `attribute` type (see spec Section 7: "Dietary/attribute tags are not deferred as
+infrastructure... only their population/UI is a later priority") — same mechanism already powering
+dish-type category browsing, just a different tag type and no schema change needed. Real scope when
+picked up: populate `attribute` tags (vegetarian/vegan/gluten-free/etc.) on real menu items — likely
+another AI-assisted manual research pass like the dish-type auto-tagging, since restaurants rarely
+label this in scrapable structured data — then a category-browsing-style UI surfacing "top dishes"
+per restriction.
+
 ### Deployment
 Not started. Spec recommends Railway (Section 8) with Vercel as a viable alternative. Currently
 runs only via `npm run dev` against the live Supabase project — nothing is reachable outside the
