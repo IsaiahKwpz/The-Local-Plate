@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
+import { paginateAll } from "@/lib/restaurants/queries";
 
 type TypedClient = SupabaseClient<Database>;
 
@@ -144,12 +145,9 @@ export async function getOpenReports(admin: TypedClient): Promise<ReportWithPrev
 }
 
 export async function getAllRestaurantsForMerge(admin: TypedClient) {
-  const { data, error } = await admin
-    .from("restaurants")
-    .select("id, name, address")
-    .order("name");
-  if (error) throw error;
-  return data;
+  return paginateAll((from, to) =>
+    admin.from("restaurants").select("id, name, address").order("name").range(from, to),
+  );
 }
 
 // createdAtLabel is formatted here, server-side, once - the same

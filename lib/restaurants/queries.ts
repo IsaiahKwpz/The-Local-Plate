@@ -3,14 +3,36 @@ import type { Database } from "@/lib/supabase/types";
 
 type TypedClient = SupabaseClient<Database>;
 
-export async function getActiveRestaurants(supabase: TypedClient) {
-  const { data, error } = await supabase
-    .from("restaurants")
-    .select("id, name, address, type, status")
-    .order("name");
+// restaurants is a full-table read with no natural per-entity scope (unlike
+// a restaurant's own menu_items, which is bounded by definition) - paginate
+// with .range() so it never silently truncates past the 1000-row PostgREST
+// cap as the restaurant count grows, the same fix already applied to
+// menu_item_tags for the same reason.
+export async function paginateAll<T>(
+  fetchPage: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
+): Promise<T[]> {
+  const pageSize = 1000;
+  let from = 0;
+  const all: T[] = [];
+  while (true) {
+    const { data, error } = await fetchPage(from, from + pageSize - 1);
+    if (error) throw error;
+    if (!data) break;
+    all.push(...data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  return all;
+}
 
-  if (error) throw error;
-  return data;
+export async function getActiveRestaurants(supabase: TypedClient) {
+  return paginateAll((from, to) =>
+    supabase
+      .from("restaurants")
+      .select("id, name, address, type, status")
+      .order("name")
+      .range(from, to),
+  );
 }
 
 export async function getHomeStats(supabase: TypedClient) {
@@ -75,12 +97,14 @@ export async function getExploreLocalRestaurants(supabase: TypedClient, limit = 
 // per brand (plus every independent) before sampling, so the homepage
 // preview actually reads as a variety of places rather than one chain.
 export async function getRestaurantsPreview(supabase: TypedClient, limit = 6) {
-  const { data, error } = await supabase
-    .from("restaurants")
-    .select("id, name, address, type, brand_id")
-    .eq("status", "active")
-    .order("name");
-  if (error) throw error;
+  const data = await paginateAll((from, to) =>
+    supabase
+      .from("restaurants")
+      .select("id, name, address, type, brand_id")
+      .eq("status", "active")
+      .order("name")
+      .range(from, to),
+  );
 
   const seenBrands = new Set<string>();
   const deduped = data.filter((r) => {
