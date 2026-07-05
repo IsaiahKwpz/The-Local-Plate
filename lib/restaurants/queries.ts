@@ -13,6 +13,85 @@ export async function getActiveRestaurants(supabase: TypedClient) {
   return data;
 }
 
+export async function getHomeStats(supabase: TypedClient) {
+  const [{ count: restaurantCount }, { count: dishCount }, { count: independentCount }] =
+    await Promise.all([
+      supabase.from("restaurants").select("*", { count: "exact", head: true }).eq("status", "active"),
+      supabase.from("menu_items").select("*", { count: "exact", head: true }).eq("is_active", true),
+      supabase
+        .from("restaurants")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active")
+        .eq("type", "independent"),
+    ]);
+
+  return {
+    restaurantCount: restaurantCount ?? 0,
+    dishCount: dishCount ?? 0,
+    independentCount: independentCount ?? 0,
+  };
+}
+
+// "Explore local" - independent (non-chain) restaurants only, per spec's
+// existing type column, no new schema needed. Shows a real dish count
+// rather than a rating figure, since these restaurants (freshly ingested)
+// mostly have no ratings yet - a fabricated-looking score would be
+// misleading; a real item count is honest and still useful.
+export async function getExploreLocalRestaurants(supabase: TypedClient, limit = 3) {
+  const { data: restaurants, error } = await supabase
+    .from("restaurants")
+    .select("id, name, address")
+    .eq("type", "independent")
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  if (restaurants.length === 0) return [];
+
+  const ids = restaurants.map((r) => r.id);
+  const { data: items, error: itemsError } = await supabase
+    .from("menu_items")
+    .select("restaurant_id")
+    .in("restaurant_id", ids)
+    .eq("is_active", true);
+  if (itemsError) throw itemsError;
+
+  const countByRestaurant = new Map<string, number>();
+  for (const item of items) {
+    countByRestaurant.set(item.restaurant_id, (countByRestaurant.get(item.restaurant_id) ?? 0) + 1);
+  }
+
+  return restaurants.map((r) => ({ ...r, itemCount: countByRestaurant.get(r.id) ?? 0 }));
+}
+
+// Alphabetical order clusters every location of one chain together (e.g. six
+// Boston Pizza rows in a row) - fetch a larger pool and pick one restaurant
+// per brand (plus every independent) before sampling, so the homepage
+// preview actually reads as a variety of places rather than one chain.
+export async function getRestaurantsPreview(supabase: TypedClient, limit = 6) {
+  const { data, error } = await supabase
+    .from("restaurants")
+    .select("id, name, address, type, brand_id")
+    .eq("status", "active")
+    .order("name");
+  if (error) throw error;
+
+  const seenBrands = new Set<string>();
+  const deduped = data.filter((r) => {
+    if (!r.brand_id) return true;
+    if (seenBrands.has(r.brand_id)) return false;
+    seenBrands.add(r.brand_id);
+    return true;
+  });
+
+  for (let i = deduped.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deduped[i], deduped[j]] = [deduped[j], deduped[i]];
+  }
+
+  return deduped.slice(0, limit);
+}
+
 type RatingAggregate = { avg_score: number | null; rating_count: number | null };
 
 export type MenuItemWithRating = Database["public"]["Tables"]["menu_items"]["Row"] & {

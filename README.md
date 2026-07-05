@@ -1,4 +1,4 @@
-# MenuRate.com
+# The Local Plate
 
 Public per-dish restaurant rating platform, launching in Ontario, Canada. Full product spec lives
 in [`docs/menurate-spec.md`](docs/menurate-spec.md) — this file is just dev setup.

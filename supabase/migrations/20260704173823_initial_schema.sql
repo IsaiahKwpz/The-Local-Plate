@@ -1,4 +1,4 @@
--- MenuRate.com — initial schema (spec Section 7) + RLS policies (Section 6/11 step 1)
+-- The Local Plate — initial schema (spec Section 7) + RLS policies (Section 6/11 step 1)
 
 create extension if not exists pgcrypto;
 

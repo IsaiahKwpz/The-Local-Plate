@@ -4,7 +4,7 @@
 // descriptive User-Agent identifying the application.
 
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
-const USER_AGENT = "MenuRateScraper/0.1 (+https://github.com/IsaiahKwpz/MenuRate.Com)";
+const USER_AGENT = "TheLocalPlateScraper/0.1 (+https://github.com/IsaiahKwpz/TheLocalPlate.Com)";
 const MIN_DELAY_MS = 1100;
 
 let lastRequestAt = 0;

@@ -7,25 +7,33 @@ export default async function RestaurantsPage() {
   const restaurants = await getActiveRestaurants(supabase);
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-12">
-      <h1 className="mb-6 text-2xl font-semibold">Restaurants</h1>
+    <main className="mx-auto max-w-3xl px-6 py-12">
+      <h1 className="font-display text-2xl font-bold">Restaurants</h1>
+      <p className="mt-1 text-sm text-ink-soft">{restaurants.length} on the list, Ottawa</p>
       {restaurants.length === 0 ? (
-        <p className="text-gray-500">No restaurants yet.</p>
+        <p className="mt-6 text-ink-soft">No restaurants yet.</p>
       ) : (
-        <ul className="flex flex-col gap-4">
+        <ul className="mt-6">
           {restaurants.map((restaurant) => (
-            <li key={restaurant.id} className="rounded border p-4">
-              <Link
-                href={`/restaurants/${restaurant.id}`}
-                className="text-lg font-medium underline"
-              >
-                {restaurant.name}
-              </Link>
-              <p className="text-sm text-gray-500">{restaurant.address}</p>
-              <div className="mt-1 flex gap-2 text-xs">
-                <span className="rounded bg-gray-100 px-2 py-0.5">{restaurant.type}</span>
+            <li
+              key={restaurant.id}
+              className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-dashed border-rule py-4"
+            >
+              <div>
+                <Link
+                  href={`/restaurants/${restaurant.id}`}
+                  className="font-display font-bold hover:underline"
+                >
+                  {restaurant.name}
+                </Link>
+                <p className="text-sm text-ink-soft">{restaurant.address}</p>
+              </div>
+              <div className="flex gap-2 text-xs">
+                <span className="rounded-full border border-rule px-2 py-0.5 text-ink-soft">
+                  {restaurant.type === "independent" ? "Independent" : "Chain"}
+                </span>
                 {restaurant.status !== "active" && (
-                  <span className="rounded bg-yellow-100 px-2 py-0.5">
+                  <span className="rounded-full bg-rust/10 px-2 py-0.5 text-rust">
                     {restaurant.status.replace("_", " ")}
                   </span>
                 )}

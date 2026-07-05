@@ -1,4 +1,7 @@
-# MenuRate.com — Product Spec (v1)
+# The Local Plate — Product Spec (v1)
+
+*Formerly named "MenuRate" during early development — renamed post-MVP-v1.0. This document
+otherwise reflects the original spec as written; only the product name has changed.*
 
 ## 1. Concept
 
@@ -60,7 +63,7 @@ niche geography before it's worth a competitor's attention.
 - **Canada's Competition Act already prohibits fake/misleading reviews** — this is not just a US
   FTC issue. The Competition Bureau enforces this under the misleading advertising provisions
   (ss. 52, 74.01) and has published specific guidance on fake online reviews. Two consequences:
-  (1) MenuRate's own rating integrity matters legally, not just reputationally — see the
+  (1) The Local Plate's own rating integrity matters legally, not just reputationally — see the
   rating-manipulation safeguards in Section 6; (2) any sponsored/promoted restaurant placement
   (Section 4) must be clearly labeled as such — not just good UX, a compliance requirement.
 - **PIPEDA** governs privacy (Canada's equivalent to CCPA/GDPR in spirit): need real consent
@@ -291,7 +294,7 @@ treat it as a swappable layer, not a permanent commitment.
   production.
 - **Backups**: confirm point-in-time recovery is enabled on Supabase — ratings and edit history
   are irreplaceable user-generated data.
-- **Rate-limit your own public pages/API eventually**: once MenuRate's aggregated dish-rating data
+- **Rate-limit your own public pages/API eventually**: once The Local Plate's aggregated dish-rating data
   has real value, the platform itself becomes a plausible scraping target the same way Yelp/Uber
   Eats are today. Not urgent at launch, worth remembering later.
 
