@@ -3,7 +3,7 @@
 Tracks progress against the Build Order in [`menurate-spec.md`](menurate-spec.md) Section 11.
 Updated as steps complete — see git history for full detail on each one.
 
-## Status: 9 of 11 steps complete
+## Status: 10 of 11 steps complete
 
 ### ✅ Step 1 — Schema + Supabase setup
 Full Section 7 data model as Supabase migrations (profiles, brands, restaurants, menu_items, tags,
@@ -83,8 +83,16 @@ prices) to seed the database with real Ottawa-area restaurants. Ingested via
   exists — just wasn't part of this research pass) and a few large beverage/wine sublists were
   trimmed for brevity on a couple of chains.
 
-### ⬜ Step 10 — Restaurant claim flow
-Not started.
+### ✅ Step 10 — Restaurant claim flow
+Any signed-in user can submit a claim on an unclaimed restaurant's page (with an optional message
+for verification context); claims queue in `restaurant_claims` for admin approval on
+`/admin/reports`, same review-queue shape as pending edits/tags. Approving a claim sets
+`restaurants.owner_user_id` and `source = 'claimed'`, and auto-rejects any other pending claims on
+that restaurant. Once claimed: the owner edits their own restaurant's menu items live regardless of
+trust score (RLS-enforced via `is_restaurant_owner()`, not just app-level), and can toggle
+`require_owner_approval` to force *all* crowd edits (even from established/high-trust accounts)
+into the pending queue for admin review. Footer's placeholder claim link now points people to the
+real per-restaurant claim button; a `mailto:` remains only for removal requests.
 
 ### ⬜ Step 11 — Photo upload + proactive image moderation
 Not started.
@@ -104,6 +112,4 @@ Not started.
   is proven against test fixtures, but real-world research found menu-item-level structured data
   genuinely rare (see step 9 notes above). Real data now comes from the manual-research batch
   instead (`scripts/ingest-batch1.mjs`), not the automated scraper.
-- The footer's "claim or request removal" link is a placeholder `mailto:` until step 10 builds the
-  real claim flow.
 - No deployment/hosting exists yet.

@@ -395,6 +395,61 @@ export type Database = {
           },
         ]
       }
+      restaurant_claims: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          restaurant_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["edit_status"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          restaurant_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["edit_status"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          restaurant_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["edit_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_claims_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurant_claims_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurant_claims_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       restaurant_tags: {
         Row: {
           restaurant_id: string
@@ -435,6 +490,7 @@ export type Database = {
           lng: number | null
           name: string
           owner_user_id: string | null
+          require_owner_approval: boolean
           source: Database["public"]["Enums"]["restaurant_source"]
           status: Database["public"]["Enums"]["restaurant_status"]
           type: Database["public"]["Enums"]["restaurant_type"]
@@ -448,6 +504,7 @@ export type Database = {
           lng?: number | null
           name: string
           owner_user_id?: string | null
+          require_owner_approval?: boolean
           source?: Database["public"]["Enums"]["restaurant_source"]
           status?: Database["public"]["Enums"]["restaurant_status"]
           type: Database["public"]["Enums"]["restaurant_type"]
@@ -461,6 +518,7 @@ export type Database = {
           lng?: number | null
           name?: string
           owner_user_id?: string | null
+          require_owner_approval?: boolean
           source?: Database["public"]["Enums"]["restaurant_source"]
           status?: Database["public"]["Enums"]["restaurant_status"]
           type?: Database["public"]["Enums"]["restaurant_type"]
@@ -549,6 +607,10 @@ export type Database = {
         Returns: string
       }
       is_low_trust: { Args: { target_user_id: string }; Returns: boolean }
+      is_restaurant_owner: {
+        Args: { target_restaurant_id: string; target_user_id: string }
+        Returns: boolean
+      }
       merge_restaurants: {
         Args: { duplicate_id: string; primary_id: string }
         Returns: undefined

@@ -1,11 +1,12 @@
 export function SiteFooter() {
   return (
     <footer className="mt-auto border-t px-6 py-4 text-xs text-gray-500">
-      Are you the owner of a listed restaurant?{" "}
+      Are you the owner of a listed restaurant? Find your restaurant and use the &ldquo;Claim this
+      restaurant&rdquo; button on its page, or{" "}
       <a href="mailto:hello@menurate.com" className="underline">
-        Contact us
+        contact us
       </a>{" "}
-      to claim your listing or request removal.
+      to request removal.
     </footer>
   );
 }

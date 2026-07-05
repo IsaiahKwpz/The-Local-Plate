@@ -70,7 +70,7 @@ export async function submitMenuItemEdit(
 
   const { data: item, error: itemError } = await supabase
     .from("menu_items")
-    .select("name, price, category, description")
+    .select("name, price, category, description, restaurant:restaurants(owner_user_id, require_owner_approval)")
     .eq("id", menuItemId)
     .single();
   if (itemError || !item) return { error: "Menu item not found." };
@@ -80,7 +80,16 @@ export async function submitMenuItemEdit(
     return { error: "No changes to submit." };
   }
 
-  if (isLowTrust(profile)) {
+  // The restaurant's owner always edits their own listing live; everyone
+  // else's direct-edit privilege is suspended if the owner opted into
+  // require_owner_approval, regardless of the editor's own trust score.
+  // RLS backs this up independently (see the step-10 migration) - a
+  // request that shouldn't go live directly would have its UPDATE silently
+  // affect zero rows even if this branch were somehow bypassed.
+  const isOwner = item.restaurant?.owner_user_id === user.id;
+  const mustQueue = !isOwner && (isLowTrust(profile) || item.restaurant?.require_owner_approval === true);
+
+  if (mustQueue) {
     const { error } = await supabase.from("pending_edits").insert(
       changes.map((c) => ({
         menu_item_id: menuItemId,
@@ -95,9 +104,8 @@ export async function submitMenuItemEdit(
     return { success: true, queued: true };
   }
 
-  // Established: goes live immediately. RLS backs this up independently -
-  // a low-trust user hitting this same code path would have their UPDATE
-  // silently affect zero rows regardless of what the app decided here.
+  // Owner, or an established user on a restaurant that hasn't opted into
+  // owner approval: goes live immediately.
   const update: Database["public"]["Tables"]["menu_items"]["Update"] = changes.reduce(
     (acc, c) => ({ ...acc, ...buildMenuItemUpdate(c.field, c.newValue) }),
     {},

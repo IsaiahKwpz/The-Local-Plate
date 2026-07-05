@@ -5,11 +5,13 @@ import {
   getAllRestaurantsForMerge,
   getPendingEdits,
   getPendingTags,
+  getPendingClaims,
 } from "@/lib/admin/queries";
 import { ReportRow } from "@/components/admin/report-row";
 import { MergeForm } from "@/components/admin/merge-form";
 import { PendingEditRow } from "@/components/admin/pending-edit-row";
 import { PendingTagRow } from "@/components/admin/pending-tag-row";
+import { ClaimRow } from "@/components/admin/claim-row";
 
 export default async function AdminReportsPage() {
   const supabase = await createClient();
@@ -40,11 +42,12 @@ export default async function AdminReportsPage() {
   }
 
   const admin = createAdminClient();
-  const [reports, restaurants, pendingEdits, pendingTags] = await Promise.all([
+  const [reports, restaurants, pendingEdits, pendingTags, pendingClaims] = await Promise.all([
     getOpenReports(admin),
     getAllRestaurantsForMerge(admin),
     getPendingEdits(admin),
     getPendingTags(admin),
+    getPendingClaims(admin),
   ]);
 
   return (
@@ -78,6 +81,17 @@ export default async function AdminReportsPage() {
         <ul className="mt-4 flex flex-col gap-4">
           {pendingTags.map((tag) => (
             <PendingTagRow key={tag.id} tag={tag} />
+          ))}
+        </ul>
+      )}
+
+      <h2 className="mt-12 text-xl font-semibold">Restaurant claims</h2>
+      {pendingClaims.length === 0 ? (
+        <p className="mt-4 text-gray-500">No pending claims.</p>
+      ) : (
+        <ul className="mt-4 flex flex-col gap-4">
+          {pendingClaims.map((claim) => (
+            <ClaimRow key={claim.id} claim={claim} />
           ))}
         </ul>
       )}

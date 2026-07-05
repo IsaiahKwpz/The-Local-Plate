@@ -203,3 +203,68 @@ export async function rejectPendingTag(
   revalidatePath("/admin/reports");
   return { success: true };
 }
+
+export async function approveRestaurantClaim(
+  _prevState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const adminUser = await requireAdmin();
+  const claimId = formData.get("claimId") as string;
+
+  const admin = createAdminClient();
+  const { data: claim, error: fetchError } = await admin
+    .from("restaurant_claims")
+    .select("*")
+    .eq("id", claimId)
+    .single();
+  if (fetchError || !claim) return { error: "Claim not found." };
+
+  const { data: restaurant } = await admin
+    .from("restaurants")
+    .select("owner_user_id")
+    .eq("id", claim.restaurant_id)
+    .single();
+  if (restaurant?.owner_user_id) return { error: "This restaurant already has an owner." };
+
+  const { error: updateError } = await admin
+    .from("restaurants")
+    .update({ owner_user_id: claim.user_id, source: "claimed" })
+    .eq("id", claim.restaurant_id);
+  if (updateError) return { error: updateError.message };
+
+  const { error } = await admin
+    .from("restaurant_claims")
+    .update({ status: "approved", reviewed_at: new Date().toISOString(), reviewed_by: adminUser.id })
+    .eq("id", claimId);
+  if (error) return { error: error.message };
+
+  // Any other still-pending claims on the same restaurant are moot now that
+  // it has an owner - close them out rather than leaving them stuck in the queue.
+  await admin
+    .from("restaurant_claims")
+    .update({ status: "rejected", reviewed_at: new Date().toISOString(), reviewed_by: adminUser.id })
+    .eq("restaurant_id", claim.restaurant_id)
+    .eq("status", "pending");
+
+  revalidatePath("/admin/reports");
+  revalidatePath(`/restaurants/${claim.restaurant_id}`);
+  return { success: true };
+}
+
+export async function rejectRestaurantClaim(
+  _prevState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const adminUser = await requireAdmin();
+  const claimId = formData.get("claimId") as string;
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("restaurant_claims")
+    .update({ status: "rejected", reviewed_at: new Date().toISOString(), reviewed_by: adminUser.id })
+    .eq("id", claimId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/reports");
+  return { success: true };
+}

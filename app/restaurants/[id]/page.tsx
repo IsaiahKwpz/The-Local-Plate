@@ -2,8 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getRestaurantWithMenu, type MenuItemWithRating } from "@/lib/restaurants/queries";
+import { getOwnClaimStatus } from "@/lib/claims/queries";
 import { RatingBadge } from "@/components/rating-badge";
 import { ReportButton } from "@/components/report-button";
+import { ClaimRestaurantButton } from "@/components/claim-restaurant-button";
+import { OwnerApprovalToggle } from "@/components/owner-approval-toggle";
 
 export default async function RestaurantPage({
   params,
@@ -20,6 +23,12 @@ export default async function RestaurantPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const isOwner = !!user && restaurant.owner_user_id === user.id;
+  const claimStatus =
+    !restaurant.owner_user_id && user
+      ? await getOwnClaimStatus(supabase, restaurant.id, user.id)
+      : null;
 
   const categories = new Map<string, MenuItemWithRating[]>();
   for (const item of items) {
@@ -39,14 +48,30 @@ export default async function RestaurantPage({
           {restaurant.status.replace("_", " ")}
         </span>
       )}
-      <div className="mt-2">
+      <div className="mt-2 flex flex-wrap items-center gap-3">
         <ReportButton
           targetType="restaurant"
           targetId={restaurant.id}
           isSignedIn={!!user}
           currentPath={`/restaurants/${restaurant.id}`}
         />
+        {restaurant.owner_user_id ? (
+          <span className="text-xs text-gray-500">✓ Verified owner</span>
+        ) : (
+          <ClaimRestaurantButton
+            restaurantId={restaurant.id}
+            isSignedIn={!!user}
+            currentPath={`/restaurants/${restaurant.id}`}
+            initialStatus={claimStatus}
+          />
+        )}
       </div>
+      {isOwner && (
+        <OwnerApprovalToggle
+          restaurantId={restaurant.id}
+          requireOwnerApproval={restaurant.require_owner_approval}
+        />
+      )}
 
       {items.length === 0 ? (
         <p className="mt-8 text-gray-500">No menu items yet.</p>

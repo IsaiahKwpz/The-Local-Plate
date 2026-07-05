@@ -126,3 +126,15 @@ export async function getPendingTags(admin: TypedClient) {
   if (error) throw error;
   return data.map((tag) => ({ ...tag, createdAtLabel: new Date(tag.created_at).toLocaleString() }));
 }
+
+export async function getPendingClaims(admin: TypedClient) {
+  const { data, error } = await admin
+    .from("restaurant_claims")
+    .select(
+      "*, restaurant:restaurants(name, address), claimant:profiles!restaurant_claims_user_id_fkey(display_name)",
+    )
+    .eq("status", "pending")
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return data.map((claim) => ({ ...claim, createdAtLabel: new Date(claim.created_at).toLocaleString() }));
+}
