@@ -153,3 +153,84 @@ export async function getRestaurantWithMenu(supabase: TypedClient, restaurantId:
 
   return { restaurant, items };
 }
+
+export type BrandDishLocation = {
+  menuItemId: string;
+  restaurantId: string;
+  restaurantName: string;
+  restaurantAddress: string;
+  price: number | null;
+  currency: string;
+  locationRating: RatingAggregate | null;
+};
+
+// Powers the "which locations have this dish" page linked from a brand's
+// grouped search result - the brand-wide rollup itself (brand_item_ratings)
+// already exists for the location page's "All [Brand] locations" badge;
+// this is the missing other half, listing the individual locations behind
+// that rollup.
+export async function getBrandDishLocations(supabase: TypedClient, brandId: string, itemName: string) {
+  const { data: brand, error: brandError } = await supabase
+    .from("brands")
+    .select("id, name")
+    .eq("id", brandId)
+    .single();
+  if (brandError) throw brandError;
+
+  const [{ data: brandRating }, { data: restaurants, error: restaurantsError }] = await Promise.all([
+    supabase
+      .from("brand_item_ratings")
+      .select("*")
+      .eq("brand_id", brandId)
+      .eq("item_name", itemName)
+      .maybeSingle(),
+    supabase.from("restaurants").select("id, name, address").eq("brand_id", brandId).eq("status", "active"),
+  ]);
+  if (restaurantsError) throw restaurantsError;
+
+  const restaurantById = new Map(restaurants.map((r) => [r.id, r]));
+  const restaurantIds = restaurants.map((r) => r.id);
+  if (restaurantIds.length === 0) {
+    return { brand, brandRating: brandRating ?? null, locations: [] as BrandDishLocation[] };
+  }
+
+  const { data: menuItems, error: itemsError } = await supabase
+    .from("menu_items")
+    .select("id, price, currency, restaurant_id")
+    .eq("name", itemName)
+    .eq("is_active", true)
+    .in("restaurant_id", restaurantIds);
+  if (itemsError) throw itemsError;
+
+  const itemIds = menuItems.map((item) => item.id);
+  const locationRatingsByItem = new Map<string, RatingAggregate>();
+  if (itemIds.length > 0) {
+    const { data: ratings, error: ratingsError } = await supabase
+      .from("menu_item_ratings")
+      .select("*")
+      .in("menu_item_id", itemIds);
+    if (ratingsError) throw ratingsError;
+    for (const r of ratings) {
+      if (r.menu_item_id) locationRatingsByItem.set(r.menu_item_id, r);
+    }
+  }
+
+  const locations: BrandDishLocation[] = menuItems
+    .map((item) => {
+      const restaurant = restaurantById.get(item.restaurant_id);
+      if (!restaurant) return null;
+      return {
+        menuItemId: item.id,
+        restaurantId: restaurant.id,
+        restaurantName: restaurant.name,
+        restaurantAddress: restaurant.address,
+        price: item.price,
+        currency: item.currency,
+        locationRating: locationRatingsByItem.get(item.id) ?? null,
+      };
+    })
+    .filter((location): location is BrandDishLocation => location !== null)
+    .sort((a, b) => a.restaurantName.localeCompare(b.restaurantName));
+
+  return { brand, brandRating: brandRating ?? null, locations };
+}

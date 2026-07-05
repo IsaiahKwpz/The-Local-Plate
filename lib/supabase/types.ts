@@ -670,6 +670,8 @@ export type Database = {
         Args: { search_query: string }
         Returns: {
           avg_score: number
+          brand_id: string
+          brand_name: string
           category: string
           currency: string
           id: string
@@ -698,6 +700,8 @@ export type Database = {
         Args: { target_tag_ids: string[] }
         Returns: {
           avg_score: number
+          brand_id: string
+          brand_name: string
           category: string
           currency: string
           id: string

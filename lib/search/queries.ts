@@ -27,6 +27,8 @@ export type MenuItemSearchResult = {
   category: string | null;
   restaurant_id: string;
   restaurant_name: string;
+  brand_id: string | null;
+  brand_name: string | null;
   avg_score: number | null;
   rating_count: number | null;
 };
@@ -84,17 +86,88 @@ export function filterMenuItems(
   });
 }
 
-export function groupByRestaurant(items: MenuItemSearchResult[]) {
-  const map = new Map<string, { restaurantId: string; restaurantName: string; items: MenuItemSearchResult[] }>();
+export type SearchResultDish = {
+  name: string;
+  items: MenuItemSearchResult[];
+};
+
+export type SearchResultGroup = {
+  key: string;
+  label: string;
+  isBrand: boolean;
+  brandId: string | null;
+  locationCount: number;
+  dishes: SearchResultDish[];
+};
+
+// Chains group by brand instead of by individual location (a chain search
+// used to show one near-identical card per location, e.g. eight "Lone Star
+// Texas Grill" cards for one Ottawa-wide search). Dishes within a brand are
+// deduped by exact name - the same convention the spec already uses for
+// brand-wide rating rollups (see brand_item_ratings) - keeping every
+// matching location's own item under that dish so the UI can list "which
+// locations have it." Independent restaurants (no brand_id) are unaffected:
+// one group per restaurant, one item per dish, exactly as before.
+export function groupSearchResults(items: MenuItemSearchResult[]): SearchResultGroup[] {
+  const groups = new Map<string, SearchResultGroup>();
+
   for (const item of items) {
-    if (!map.has(item.restaurant_id)) {
-      map.set(item.restaurant_id, {
-        restaurantId: item.restaurant_id,
-        restaurantName: item.restaurant_name,
-        items: [],
+    const isBrand = Boolean(item.brand_id);
+    const key = isBrand ? `brand:${item.brand_id}` : `restaurant:${item.restaurant_id}`;
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        key,
+        label: isBrand ? (item.brand_name ?? item.restaurant_name) : item.restaurant_name,
+        isBrand,
+        brandId: item.brand_id,
+        locationCount: 0,
+        dishes: [],
       });
     }
-    map.get(item.restaurant_id)!.items.push(item);
+
+    const group = groups.get(key)!;
+    let dish = group.dishes.find((d) => d.name === item.name);
+    if (!dish) {
+      dish = { name: item.name, items: [] };
+      group.dishes.push(dish);
+    }
+    dish.items.push(item);
   }
-  return Array.from(map.values()).sort((a, b) => b.items.length - a.items.length);
+
+  for (const group of groups.values()) {
+    group.locationCount = new Set(group.dishes.flatMap((d) => d.items.map((i) => i.restaurant_id))).size;
+    group.dishes.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  return Array.from(groups.values()).sort((a, b) => {
+    const totalA = a.dishes.reduce((sum, d) => sum + d.items.length, 0);
+    const totalB = b.dishes.reduce((sum, d) => sum + d.items.length, 0);
+    return totalB - totalA;
+  });
+}
+
+export type RatingAggregate = { avg_score: number | null; rating_count: number | null };
+
+// Batched lookup for the brand-wide rating of every (brand, dish name) pair
+// visible on the page - avoids one round trip per dish.
+export async function getBrandItemRatings(
+  supabase: TypedClient,
+  brandIds: string[],
+): Promise<Map<string, RatingAggregate>> {
+  const map = new Map<string, RatingAggregate>();
+  if (brandIds.length === 0) return map;
+
+  const { data, error } = await supabase
+    .from("brand_item_ratings")
+    .select("*")
+    .in("brand_id", brandIds);
+  if (error) throw error;
+
+  for (const row of data) {
+    if (row.brand_id && row.item_name) {
+      map.set(`${row.brand_id}:${row.item_name}`, { avg_score: row.avg_score, rating_count: row.rating_count });
+    }
+  }
+  return map;
 }

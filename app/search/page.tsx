@@ -5,7 +5,8 @@ import {
   searchMenuItems,
   searchMenuItemsByTags,
   getBrowseCategories,
-  groupByRestaurant,
+  groupSearchResults,
+  getBrandItemRatings,
   filterMenuItems,
   type MenuItemSearchResult,
 } from "@/lib/search/queries";
@@ -32,7 +33,8 @@ export default async function SearchPage({
   const categories = await getBrowseCategories(supabase);
 
   let restaurants: Awaited<ReturnType<typeof searchRestaurants>> = [];
-  let groups: ReturnType<typeof groupByRestaurant> = [];
+  let groups: ReturnType<typeof groupSearchResults> = [];
+  let brandRatings = new Map<string, { avg_score: number | null; rating_count: number | null }>();
 
   if (hasSearch) {
     const [restaurantsResult, rawMenuItems]: [
@@ -49,7 +51,10 @@ export default async function SearchPage({
       maxPrice: maxPrice ? Number(maxPrice) : undefined,
       minRating: minRating ? Number(minRating) : undefined,
     });
-    groups = groupByRestaurant(menuItems);
+    groups = groupSearchResults(menuItems);
+
+    const brandIds = groups.filter((g) => g.brandId).map((g) => g.brandId!);
+    brandRatings = await getBrandItemRatings(supabase, brandIds);
   }
 
   const heading =
@@ -137,44 +142,109 @@ export default async function SearchPage({
               ) : (
                 <div className="flex flex-col gap-3">
                   {groups.map((group) => (
-                    <details
-                      key={group.restaurantId}
-                      className="rounded border border-rule bg-surface open:pb-2"
-                    >
+                    <details key={group.key} className="rounded border border-rule bg-surface open:pb-2">
                       <summary className="flex cursor-pointer items-center justify-between gap-4 p-4 font-display font-bold">
-                        <span>{group.restaurantName}</span>
+                        <span>{group.label}</span>
                         <span className="text-sm font-normal text-ink-soft">
-                          {group.items.length} {group.items.length === 1 ? "match" : "matches"}
+                          {group.dishes.length} {group.dishes.length === 1 ? "match" : "matches"}
+                          {group.isBrand && group.locationCount > 1
+                            ? ` · ${group.locationCount} locations`
+                            : ""}
                         </span>
                       </summary>
-                      <div className="px-4 pb-1">
-                        <Link
-                          href={`/restaurants/${group.restaurantId}`}
-                          className="text-sm underline"
-                        >
-                          View restaurant page →
-                        </Link>
-                      </div>
+
+                      {!group.isBrand && (
+                        <div className="px-4 pb-1">
+                          <Link
+                            href={`/restaurants/${group.dishes[0].items[0].restaurant_id}`}
+                            className="text-sm underline"
+                          >
+                            View restaurant page →
+                          </Link>
+                        </div>
+                      )}
+
                       <ul className="flex flex-col gap-3 px-4">
-                        {group.items.map((item) => (
-                          <li key={item.id} className="border-t border-dashed border-rule pt-3">
-                            <div className="flex items-baseline justify-between gap-4">
-                              <Link href={`/menu-items/${item.id}`} className="font-medium underline">
-                                {item.name}
-                              </Link>
-                              {item.price != null && (
-                                <span className="text-sm text-ink-soft">
-                                  ${item.price.toFixed(2)} {item.currency}
-                                </span>
-                              )}
-                            </div>
-                            <div className="mt-1">
-                              <RatingBadge
-                                rating={{ avg_score: item.avg_score, rating_count: item.rating_count }}
-                              />
-                            </div>
-                          </li>
-                        ))}
+                        {group.dishes.map((dish) => {
+                          const soleItem = dish.items[0];
+
+                          if (!group.isBrand) {
+                            return (
+                              <li key={dish.name} className="border-t border-dashed border-rule pt-3">
+                                <div className="flex items-baseline justify-between gap-4">
+                                  <Link
+                                    href={`/menu-items/${soleItem.id}`}
+                                    className="font-medium underline"
+                                  >
+                                    {dish.name}
+                                  </Link>
+                                  {soleItem.price != null && (
+                                    <span className="text-sm text-ink-soft">
+                                      ${soleItem.price.toFixed(2)} {soleItem.currency}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="mt-1">
+                                  <RatingBadge
+                                    rating={{
+                                      avg_score: soleItem.avg_score,
+                                      rating_count: soleItem.rating_count,
+                                    }}
+                                  />
+                                </div>
+                              </li>
+                            );
+                          }
+
+                          const brandRating = group.brandId
+                            ? (brandRatings.get(`${group.brandId}:${dish.name}`) ?? null)
+                            : null;
+
+                          return (
+                            <li key={dish.name} className="border-t border-dashed border-rule pt-3">
+                              <details>
+                                <summary className="flex cursor-pointer items-baseline justify-between gap-4">
+                                  <span className="font-medium underline">{dish.name}</span>
+                                  <span className="text-sm text-ink-soft">
+                                    {dish.items.length} {dish.items.length === 1 ? "location" : "locations"}
+                                  </span>
+                                </summary>
+                                <div className="mt-2">
+                                  <RatingBadge rating={brandRating} label={`All ${group.label} locations`} />
+                                </div>
+                                <ul className="mt-2 flex flex-col gap-2">
+                                  {dish.items.map((item) => (
+                                    <li key={item.id} className="border-l-2 border-rule pl-3">
+                                      <div className="flex items-baseline justify-between gap-4">
+                                        <Link
+                                          href={`/restaurants/${item.restaurant_id}`}
+                                          className="text-sm underline"
+                                        >
+                                          {item.restaurant_name}
+                                        </Link>
+                                        {item.price != null && (
+                                          <span className="text-xs text-ink-soft">
+                                            ${item.price.toFixed(2)} {item.currency}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <RatingBadge
+                                        rating={{ avg_score: item.avg_score, rating_count: item.rating_count }}
+                                        label="This location"
+                                      />
+                                    </li>
+                                  ))}
+                                </ul>
+                                <Link
+                                  href={`/brands/${group.brandId}/dishes/${encodeURIComponent(dish.name)}`}
+                                  className="mt-2 inline-block text-xs text-ink-soft underline"
+                                >
+                                  View full details →
+                                </Link>
+                              </details>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </details>
                   ))}
