@@ -8,6 +8,8 @@ import {
   groupSearchResults,
   getBrandItemRatings,
   filterMenuItems,
+  getTopRatedDishes,
+  getTopRatedRestaurants,
   type MenuItemSearchResult,
 } from "@/lib/search/queries";
 import { RatingBadge } from "@/components/rating-badge";
@@ -35,6 +37,15 @@ export default async function SearchPage({
   let restaurants: Awaited<ReturnType<typeof searchRestaurants>> = [];
   let groups: ReturnType<typeof groupSearchResults> = [];
   let brandRatings = new Map<string, { avg_score: number | null; rating_count: number | null }>();
+  let topDishes: Awaited<ReturnType<typeof getTopRatedDishes>> = [];
+  let topRestaurants: Awaited<ReturnType<typeof getTopRatedRestaurants>> = [];
+
+  if (!hasSearch) {
+    [topDishes, topRestaurants] = await Promise.all([
+      getTopRatedDishes(supabase),
+      getTopRatedRestaurants(supabase),
+    ]);
+  }
 
   if (hasSearch) {
     const [restaurantsResult, rawMenuItems]: [
@@ -106,9 +117,63 @@ export default async function SearchPage({
 
         <div className="flex flex-col gap-8">
           {!hasSearch && (
-            <p className="text-sm text-ink-soft">
-              Pick a category from the sidebar, or use the search bar above.
-            </p>
+            <>
+              <p className="text-sm text-ink-soft">
+                Pick a category from the sidebar, or use the search bar above.
+              </p>
+
+              {topRestaurants.length > 0 && (
+                <section>
+                  <h2 className="mb-3 font-display text-lg font-bold">Top rated restaurants</h2>
+                  <ul className="flex flex-col gap-3">
+                    {topRestaurants.map((restaurant) => (
+                      <li key={restaurant.id} className="rounded border border-rule bg-surface p-4">
+                        <div className="flex items-baseline justify-between gap-4">
+                          <Link
+                            href={`/restaurants/${restaurant.id}`}
+                            className="font-display font-bold underline"
+                          >
+                            {restaurant.name}
+                          </Link>
+                          <RatingBadge
+                            rating={{ avg_score: restaurant.avg_score, rating_count: restaurant.rating_count }}
+                          />
+                        </div>
+                        <p className="text-sm text-ink-soft">{restaurant.address}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              {topDishes.length > 0 && (
+                <section>
+                  <h2 className="mb-3 font-display text-lg font-bold">Top rated dishes</h2>
+                  <ul className="flex flex-col gap-3">
+                    {topDishes.map((dish) => (
+                      <li key={dish.id} className="rounded border border-rule bg-surface p-4">
+                        <div className="flex items-baseline justify-between gap-4">
+                          <Link href={`/menu-items/${dish.id}`} className="font-medium underline">
+                            {dish.name}
+                          </Link>
+                          {dish.price != null && (
+                            <span className="text-sm text-ink-soft">
+                              ${dish.price.toFixed(2)} {dish.currency}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-ink-soft">{dish.restaurant_name}</p>
+                        <div className="mt-1">
+                          <RatingBadge
+                            rating={{ avg_score: dish.avg_score, rating_count: dish.rating_count }}
+                          />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+            </>
           )}
 
           {hasSearch && tagIds.length === 0 && (

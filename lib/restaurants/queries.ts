@@ -14,21 +14,27 @@ export async function getActiveRestaurants(supabase: TypedClient) {
 }
 
 export async function getHomeStats(supabase: TypedClient) {
-  const [{ count: restaurantCount }, { count: dishCount }, { count: independentCount }] =
-    await Promise.all([
-      supabase.from("restaurants").select("*", { count: "exact", head: true }).eq("status", "active"),
-      supabase.from("menu_items").select("*", { count: "exact", head: true }).eq("is_active", true),
-      supabase
-        .from("restaurants")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "active")
-        .eq("type", "independent"),
-    ]);
+  const [
+    { count: restaurantCount },
+    { count: dishCount },
+    { count: independentCount },
+    { data: ratedRestaurantCount },
+  ] = await Promise.all([
+    supabase.from("restaurants").select("*", { count: "exact", head: true }).eq("status", "active"),
+    supabase.from("menu_items").select("*", { count: "exact", head: true }).eq("is_active", true),
+    supabase
+      .from("restaurants")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "active")
+      .eq("type", "independent"),
+    supabase.rpc("count_rated_restaurants"),
+  ]);
 
   return {
     restaurantCount: restaurantCount ?? 0,
     dishCount: dishCount ?? 0,
     independentCount: independentCount ?? 0,
+    ratedRestaurantCount: ratedRestaurantCount ?? 0,
   };
 }
 

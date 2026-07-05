@@ -649,6 +649,7 @@ export type Database = {
       }
     }
     Functions: {
+      count_rated_restaurants: { Args: never; Returns: number }
       decrement_trust_score: {
         Args: { target_user_id: string }
         Returns: undefined
@@ -724,6 +725,29 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      top_rated_dishes: {
+        Args: { min_ratings?: number; result_limit?: number }
+        Returns: {
+          avg_score: number
+          currency: string
+          id: string
+          name: string
+          price: number
+          rating_count: number
+          restaurant_id: string
+          restaurant_name: string
+        }[]
+      }
+      top_rated_restaurants: {
+        Args: { min_ratings?: number; result_limit?: number }
+        Returns: {
+          address: string
+          avg_score: number
+          id: string
+          name: string
+          rating_count: number
+        }[]
+      }
     }
     Enums: {
       edit_status: "pending" | "approved" | "rejected"

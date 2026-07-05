@@ -49,7 +49,7 @@ export default async function Home() {
         <div className="mt-10 flex divide-x divide-rule border border-rule">
           <div className="flex-1 bg-surface px-5 py-4">
             <span className="font-display block text-2xl font-extrabold text-rust">
-              {stats.restaurantCount.toLocaleString()}
+              {stats.ratedRestaurantCount.toLocaleString()}
             </span>
             <span className="text-sm text-ink-soft">restaurants rated</span>
           </div>

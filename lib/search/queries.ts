@@ -19,6 +19,20 @@ export async function searchMenuItems(supabase: TypedClient, query: string) {
   return data;
 }
 
+// Teaser lists for the search page's empty state (no query, no category
+// picked yet) - previously just a blank instruction line.
+export async function getTopRatedDishes(supabase: TypedClient, limit = 6) {
+  const { data, error } = await supabase.rpc("top_rated_dishes", { result_limit: limit });
+  if (error) throw error;
+  return data;
+}
+
+export async function getTopRatedRestaurants(supabase: TypedClient, limit = 5) {
+  const { data, error } = await supabase.rpc("top_rated_restaurants", { result_limit: limit });
+  if (error) throw error;
+  return data;
+}
+
 export type MenuItemSearchResult = {
   id: string;
   name: string;
