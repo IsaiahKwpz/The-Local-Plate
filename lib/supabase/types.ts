@@ -680,6 +680,20 @@ export type Database = {
           restaurant_name: string
         }[]
       }
+      search_menu_items_by_tag: {
+        Args: { target_tag_id: string }
+        Returns: {
+          avg_score: number
+          category: string
+          currency: string
+          id: string
+          name: string
+          price: number
+          rating_count: number
+          restaurant_id: string
+          restaurant_name: string
+        }[]
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
     }

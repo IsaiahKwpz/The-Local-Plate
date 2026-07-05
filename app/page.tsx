@@ -6,6 +6,7 @@ import {
   getRestaurantsPreview,
 } from "@/lib/restaurants/queries";
 import { PlateArt } from "@/components/plate-art";
+import { HeroArt } from "@/components/hero-art";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -17,28 +18,31 @@ export default async function Home() {
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
-      <section className="max-w-xl">
-        <p className="mb-4 text-sm font-bold tracking-wide text-olive uppercase">
-          Ottawa, dish by dish
-        </p>
-        <h1 className="font-display text-4xl leading-tight font-bold text-balance sm:text-5xl">
-          The good stuff, kept close to <span className="text-rust">home.</span>
-        </h1>
-        <p className="mt-4 max-w-md text-lg text-ink-soft">
-          Rate the dish, not just the restaurant — so the next person at the table knows exactly
-          what to order.
-        </p>
-        <form action="/search" method="GET" className="mt-7 flex max-w-lg rounded-lg border border-rule-strong bg-surface overflow-hidden">
-          <input
-            type="search"
-            name="q"
-            placeholder="Search a dish, a cuisine, or a place"
-            className="min-w-0 flex-1 bg-transparent px-5 py-3.5 text-ink placeholder:text-ink-soft focus:outline-none"
-          />
-          <button type="submit" className="bg-olive px-6 text-sm font-bold text-white hover:brightness-95">
-            Search
-          </button>
-        </form>
+      <section className="grid grid-cols-1 items-center gap-8 sm:grid-cols-[1.2fr_0.8fr]">
+        <div>
+          <p className="mb-4 text-sm font-bold tracking-wide text-olive uppercase">
+            Ottawa, dish by dish
+          </p>
+          <h1 className="font-display text-4xl leading-tight font-bold text-balance sm:text-5xl">
+            The good stuff, kept close to <span className="text-rust">home.</span>
+          </h1>
+          <p className="mt-4 max-w-md text-lg text-ink-soft">
+            Rate the dish, not just the restaurant — so the next person at the table knows exactly
+            what to order.
+          </p>
+          <form action="/search" method="GET" className="mt-7 flex max-w-lg overflow-hidden rounded-lg border border-rule-strong bg-surface">
+            <input
+              type="search"
+              name="q"
+              placeholder="Search a dish, a cuisine, or a place"
+              className="min-w-0 flex-1 bg-transparent px-5 py-3.5 text-ink placeholder:text-ink-soft focus:outline-none"
+            />
+            <button type="submit" className="bg-olive px-6 text-sm font-bold text-white hover:brightness-95">
+              Search
+            </button>
+          </form>
+        </div>
+        <HeroArt />
       </section>
 
       {stats.restaurantCount > 0 && (
