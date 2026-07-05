@@ -11,6 +11,7 @@ import {
 } from "@/lib/search/queries";
 import { RatingBadge } from "@/components/rating-badge";
 import { BrowseCategories } from "@/components/browse-categories";
+import { CategorySidebar } from "@/components/category-sidebar";
 import { SearchFilters } from "@/components/search-filters";
 
 export default async function SearchPage({
@@ -77,10 +78,9 @@ export default async function SearchPage({
             <h2 className="mb-2 font-display text-sm font-bold uppercase tracking-wide text-ink-soft">
               Categories
             </h2>
-            <BrowseCategories
+            <CategorySidebar
               categories={categories}
               activeTagIds={tagIds}
-              variant="list"
               minPrice={minPrice}
               maxPrice={maxPrice}
               minRating={minRating}
