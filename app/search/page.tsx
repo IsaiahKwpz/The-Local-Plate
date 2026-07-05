@@ -11,11 +11,17 @@ import {
   filterMenuItems,
   getTopRatedDishes,
   getTopRatedRestaurants,
+  getRestaurantsWithinRadius,
   type MenuItemSearchResult,
 } from "@/lib/search/queries";
+import { geocodeAddress } from "@/lib/geo/geocode";
 import { RatingBadge } from "@/components/rating-badge";
 import { CategorySidebar } from "@/components/category-sidebar";
 import { SearchFilters } from "@/components/search-filters";
+
+function formatDistance(km: number) {
+  return km < 1 ? `${Math.round(km * 1000)} m away` : `${km.toFixed(1)} km away`;
+}
 
 export default async function SearchPage({
   searchParams,
@@ -26,13 +32,16 @@ export default async function SearchPage({
     minPrice?: string;
     maxPrice?: string;
     minRating?: string;
+    address?: string;
+    radiusKm?: string;
   }>;
 }) {
-  const { q, tags, minPrice, maxPrice, minRating } = await searchParams;
+  const { q, tags, minPrice, maxPrice, minRating, address, radiusKm } = await searchParams;
   const query = q?.trim() ?? "";
   const tagIds = tags ? tags.split(",").filter(Boolean) : [];
   const hasSearch = query.length > 0 || tagIds.length > 0;
-  const hasFilters = Boolean(minPrice || maxPrice || minRating);
+  const trimmedAddress = address?.trim() ?? "";
+  const hasFilters = Boolean(minPrice || maxPrice || minRating || trimmedAddress);
   const showResults = hasSearch || hasFilters;
   const supabase = await createClient();
   const categories = await getBrowseCategories(supabase);
@@ -42,6 +51,8 @@ export default async function SearchPage({
   let brandRatings = new Map<string, { avg_score: number | null; rating_count: number | null }>();
   let topDishes: Awaited<ReturnType<typeof getTopRatedDishes>> = [];
   let topRestaurants: Awaited<ReturnType<typeof getTopRatedRestaurants>> = [];
+  let distanceByRestaurant = new Map<string, number>();
+  let locationError = false;
 
   if (!showResults) {
     [topDishes, topRestaurants] = await Promise.all([
@@ -51,13 +62,29 @@ export default async function SearchPage({
   }
 
   if (showResults) {
+    let restaurantIdFilter: Set<string> | undefined;
+
+    if (trimmedAddress) {
+      const coords = await geocodeAddress(trimmedAddress);
+      if (!coords) {
+        locationError = true;
+      } else {
+        const radius = radiusKm ? Number(radiusKm) : 5;
+        const nearby = await getRestaurantsWithinRadius(supabase, coords.lat, coords.lng, radius);
+        restaurantIdFilter = new Set(nearby.map((r) => r.id));
+        distanceByRestaurant = new Map(nearby.map((r) => [r.id, r.distance_km]));
+      }
+    }
+
     let rawMenuItems: MenuItemSearchResult[];
     if (hasSearch) {
       const [restaurantsResult, itemsResult] = await Promise.all([
         tagIds.length > 0 ? Promise.resolve([]) : searchRestaurants(supabase, query),
         tagIds.length > 0 ? searchMenuItemsByTags(supabase, tagIds) : searchMenuItems(supabase, query),
       ]);
-      restaurants = restaurantsResult;
+      restaurants = restaurantIdFilter
+        ? restaurantsResult.filter((r) => restaurantIdFilter!.has(r.id))
+        : restaurantsResult;
       rawMenuItems = itemsResult;
     } else {
       rawMenuItems = await browseMenuItems(supabase);
@@ -67,6 +94,7 @@ export default async function SearchPage({
       minPrice: minPrice ? Number(minPrice) : undefined,
       maxPrice: maxPrice ? Number(maxPrice) : undefined,
       minRating: minRating ? Number(minRating) : undefined,
+      restaurantIds: restaurantIdFilter,
     });
     groups = groupSearchResults(menuItems);
 
@@ -109,6 +137,8 @@ export default async function SearchPage({
               minPrice={minPrice}
               maxPrice={maxPrice}
               minRating={minRating}
+              address={address}
+              radiusKm={radiusKm}
             />
           </div>
           <div>
@@ -121,6 +151,9 @@ export default async function SearchPage({
               minPrice={minPrice}
               maxPrice={maxPrice}
               minRating={minRating}
+              address={address}
+              radiusKm={radiusKm}
+              locationError={locationError}
             />
           </div>
         </aside>
@@ -195,12 +228,19 @@ export default async function SearchPage({
                 <ul className="flex flex-col gap-3">
                   {restaurants.map((restaurant) => (
                     <li key={restaurant.id} className="rounded border border-rule bg-surface p-4">
-                      <Link
-                        href={`/restaurants/${restaurant.id}`}
-                        className="font-display font-bold underline"
-                      >
-                        {restaurant.name}
-                      </Link>
+                      <div className="flex items-baseline justify-between gap-4">
+                        <Link
+                          href={`/restaurants/${restaurant.id}`}
+                          className="font-display font-bold underline"
+                        >
+                          {restaurant.name}
+                        </Link>
+                        {distanceByRestaurant.has(restaurant.id) && (
+                          <span className="text-sm text-ink-soft">
+                            {formatDistance(distanceByRestaurant.get(restaurant.id)!)}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-ink-soft">{restaurant.address}</p>
                     </li>
                   ))}
@@ -244,6 +284,7 @@ export default async function SearchPage({
                           const soleItem = dish.items[0];
 
                           if (!group.isBrand) {
+                            const distance = distanceByRestaurant.get(soleItem.restaurant_id);
                             return (
                               <li key={dish.name} className="border-t border-dashed border-rule pt-3">
                                 <div className="flex items-baseline justify-between gap-4">
@@ -259,13 +300,16 @@ export default async function SearchPage({
                                     </span>
                                   )}
                                 </div>
-                                <div className="mt-1">
+                                <div className="mt-1 flex items-center gap-3">
                                   <RatingBadge
                                     rating={{
                                       avg_score: soleItem.avg_score,
                                       rating_count: soleItem.rating_count,
                                     }}
                                   />
+                                  {distance != null && (
+                                    <span className="text-xs text-ink-soft">{formatDistance(distance)}</span>
+                                  )}
                                 </div>
                               </li>
                             );
@@ -297,27 +341,35 @@ export default async function SearchPage({
                                     View full details →
                                   </Link>
                                   <ul className="flex flex-col gap-2">
-                                    {dish.items.map((item) => (
-                                      <li key={item.id} className="border-l-2 border-rule pl-3">
-                                        <div className="flex items-baseline justify-between gap-4">
-                                          <Link
-                                            href={`/restaurants/${item.restaurant_id}`}
-                                            className="text-sm underline"
-                                          >
-                                            {item.restaurant_name}
-                                          </Link>
-                                          {item.price != null && (
-                                            <span className="text-xs text-ink-soft">
-                                              ${item.price.toFixed(2)} {item.currency}
-                                            </span>
-                                          )}
-                                        </div>
-                                        <RatingBadge
-                                          rating={{ avg_score: item.avg_score, rating_count: item.rating_count }}
-                                          label="This location"
-                                        />
-                                      </li>
-                                    ))}
+                                    {dish.items.map((item) => {
+                                      const distance = distanceByRestaurant.get(item.restaurant_id);
+                                      return (
+                                        <li key={item.id} className="border-l-2 border-rule pl-3">
+                                          <div className="flex items-baseline justify-between gap-4">
+                                            <Link
+                                              href={`/restaurants/${item.restaurant_id}`}
+                                              className="text-sm underline"
+                                            >
+                                              {item.restaurant_name}
+                                            </Link>
+                                            {item.price != null && (
+                                              <span className="text-xs text-ink-soft">
+                                                ${item.price.toFixed(2)} {item.currency}
+                                              </span>
+                                            )}
+                                          </div>
+                                          <div className="flex items-center gap-3">
+                                            <RatingBadge
+                                              rating={{ avg_score: item.avg_score, rating_count: item.rating_count }}
+                                              label="This location"
+                                            />
+                                            {distance != null && (
+                                              <span className="text-xs text-ink-soft">{formatDistance(distance)}</span>
+                                            )}
+                                          </div>
+                                        </li>
+                                      );
+                                    })}
                                   </ul>
                                 </div>
                               </details>

@@ -99,14 +99,43 @@ export async function browseMenuItems(supabase: TypedClient, limit = 300): Promi
 
 export function filterMenuItems(
   items: MenuItemSearchResult[],
-  filters: { minPrice?: number; maxPrice?: number; minRating?: number },
+  filters: { minPrice?: number; maxPrice?: number; minRating?: number; restaurantIds?: Set<string> },
 ): MenuItemSearchResult[] {
   return items.filter((item) => {
     if (filters.minPrice != null && (item.price == null || item.price < filters.minPrice)) return false;
     if (filters.maxPrice != null && (item.price == null || item.price > filters.maxPrice)) return false;
     if (filters.minRating != null && (item.avg_score == null || item.avg_score < filters.minRating)) return false;
+    if (filters.restaurantIds != null && !filters.restaurantIds.has(item.restaurant_id)) return false;
     return true;
   });
+}
+
+export type NearbyRestaurant = {
+  id: string;
+  name: string;
+  address: string;
+  type: "independent" | "chain";
+  brand_id: string | null;
+  distance_km: number;
+};
+
+// Backs "search near this address" - restaurants already carry lat/lng from
+// ingestion-time geocoding, so distance is computed entirely in SQL (see
+// migration 20260720000000) rather than fetching every restaurant to filter
+// in app code.
+export async function getRestaurantsWithinRadius(
+  supabase: TypedClient,
+  lat: number,
+  lng: number,
+  radiusKm: number,
+): Promise<NearbyRestaurant[]> {
+  const { data, error } = await supabase.rpc("restaurants_within_radius", {
+    center_lat: lat,
+    center_lng: lng,
+    radius_km: radiusKm,
+  });
+  if (error) throw error;
+  return data;
 }
 
 export type SearchResultDish = {

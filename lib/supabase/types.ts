@@ -102,6 +102,27 @@ export type Database = {
           },
         ]
       }
+      geocode_cache: {
+        Row: {
+          address_key: string
+          created_at: string
+          lat: number
+          lng: number
+        }
+        Insert: {
+          address_key: string
+          created_at?: string
+          lat: number
+          lng: number
+        }
+        Update: {
+          address_key?: string
+          created_at?: string
+          lat?: number
+          lng?: number
+        }
+        Relationships: []
+      }
       menu_item_tags: {
         Row: {
           menu_item_id: string
@@ -682,6 +703,17 @@ export type Database = {
       merge_restaurants: {
         Args: { duplicate_id: string; primary_id: string }
         Returns: undefined
+      }
+      restaurants_within_radius: {
+        Args: { center_lat: number; center_lng: number; radius_km: number }
+        Returns: {
+          address: string
+          brand_id: string
+          distance_km: number
+          id: string
+          name: string
+          type: Database["public"]["Enums"]["restaurant_type"]
+        }[]
       }
       search_menu_items: {
         Args: { search_query: string }

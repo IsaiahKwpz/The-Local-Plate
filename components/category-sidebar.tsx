@@ -5,13 +5,21 @@ import Link from "next/link";
 
 function buildTagHref(
   nextTagIds: string[],
-  extraParams: { minPrice?: string; maxPrice?: string; minRating?: string },
+  extraParams: {
+    minPrice?: string;
+    maxPrice?: string;
+    minRating?: string;
+    address?: string;
+    radiusKm?: string;
+  },
 ) {
   const params = new URLSearchParams();
   if (nextTagIds.length > 0) params.set("tags", nextTagIds.join(","));
   if (extraParams.minPrice) params.set("minPrice", extraParams.minPrice);
   if (extraParams.maxPrice) params.set("maxPrice", extraParams.maxPrice);
   if (extraParams.minRating) params.set("minRating", extraParams.minRating);
+  if (extraParams.address) params.set("address", extraParams.address);
+  if (extraParams.radiusKm) params.set("radiusKm", extraParams.radiusKm);
   const query = params.toString();
   return query ? `/search?${query}` : "/search";
 }
@@ -22,18 +30,22 @@ export function CategorySidebar({
   minPrice,
   maxPrice,
   minRating,
+  address,
+  radiusKm,
 }: {
   categories: { id: string; name: string; count: number }[];
   activeTagIds?: string[];
   minPrice?: string;
   maxPrice?: string;
   minRating?: string;
+  address?: string;
+  radiusKm?: string;
 }) {
   const [filterText, setFilterText] = useState("");
 
   if (categories.length === 0) return null;
 
-  const extraParams = { minPrice, maxPrice, minRating };
+  const extraParams = { minPrice, maxPrice, minRating, address, radiusKm };
   const toggleHref = (categoryId: string) => {
     const isActive = activeTagIds.includes(categoryId);
     const nextIds = isActive
