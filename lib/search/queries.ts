@@ -47,17 +47,38 @@ export type MenuItemSearchResult = {
   rating_count: number | null;
 };
 
-// Dish-type tags only (not cuisine/attribute) - those are what "browse by
-// category" means here. Counted client-side rather than via an embedded
-// PostgREST count, since menu_item_tags has no restaurant-scoping to filter
-// on and a plain fetch-then-count is simpler to get right.
-export async function getBrowseCategories(supabase: TypedClient) {
-  const [{ data: tags, error: tagsError }, { data: links, error: linksError }] = await Promise.all([
-    supabase.from("tags").select("id, name").eq("type", "dish_type"),
-    supabase.from("menu_item_tags").select("tag_id"),
+// menu_item_tags has crossed the 1000-row PostgREST response cap
+// (supabase/config.toml's max_rows), so a plain unpaginated select silently
+// dropped rows past the first 1000 and undercounted every category. Paginate
+// with .range() until a page comes back short, the same fix already applied
+// elsewhere in this codebase for the same cap.
+async function fetchAllTagLinks(supabase: TypedClient) {
+  const pageSize = 1000;
+  let from = 0;
+  const links: { tag_id: string }[] = [];
+  while (true) {
+    const { data, error } = await supabase
+      .from("menu_item_tags")
+      .select("tag_id")
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    links.push(...data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  return links;
+}
+
+// Dish-type tags by default (not cuisine/attribute) - those are what
+// "browse by category" means here. Counted client-side rather than via an
+// embedded PostgREST count, since menu_item_tags has no restaurant-scoping
+// to filter on and a plain fetch-then-count is simpler to get right.
+export async function getBrowseCategories(supabase: TypedClient, tagType: "dish_type" | "attribute" = "dish_type") {
+  const [{ data: tags, error: tagsError }, links] = await Promise.all([
+    supabase.from("tags").select("id, name").eq("type", tagType),
+    fetchAllTagLinks(supabase),
   ]);
   if (tagsError) throw tagsError;
-  if (linksError) throw linksError;
 
   const countByTag = new Map<string, number>();
   for (const link of links) {
