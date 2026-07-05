@@ -29,7 +29,7 @@ export async function getActiveRestaurants(supabase: TypedClient) {
   return paginateAll((from, to) =>
     supabase
       .from("restaurants")
-      .select("id, name, address, type, status")
+      .select("id, name, address, type, status, lat, lng")
       .order("name")
       .range(from, to),
   );

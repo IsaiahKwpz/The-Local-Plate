@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveRestaurants } from "@/lib/restaurants/queries";
+import { RestaurantsViewToggle } from "@/components/restaurants-view-toggle";
+import { RestaurantMap } from "@/components/restaurant-map";
 
 export default async function RestaurantsPage() {
   const supabase = await createClient();
   const restaurants = await getActiveRestaurants(supabase);
 
-  return (
-    <main className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="font-display text-2xl font-bold">Restaurants</h1>
-      <p className="mt-1 text-sm text-ink-soft">{restaurants.length} on the list, Ottawa</p>
+  const list = (
+    <>
       {restaurants.length === 0 ? (
         <p className="mt-6 text-ink-soft">No restaurants yet.</p>
       ) : (
@@ -42,6 +42,17 @@ export default async function RestaurantsPage() {
           ))}
         </ul>
       )}
+    </>
+  );
+
+  return (
+    <main className="mx-auto w-full max-w-3xl px-6 py-12">
+      <h1 className="font-display text-2xl font-bold">Restaurants</h1>
+      <p className="mt-1 text-sm text-ink-soft">{restaurants.length} on the list, Ottawa</p>
+
+      <div className="mt-6">
+        <RestaurantsViewToggle list={list} map={<RestaurantMap restaurants={restaurants} />} />
+      </div>
     </main>
   );
 }
