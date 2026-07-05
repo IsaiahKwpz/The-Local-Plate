@@ -68,7 +68,7 @@ function weightedScore() {
 }
 
 function commentFor(score) {
-  if (Math.random() > 0.2) return null;
+  if (Math.random() > 0.5) return null;
   if (score >= 4) return pick(POSITIVE_COMMENTS);
   if (score === 3) return pick(NEUTRAL_COMMENTS);
   return pick(NEGATIVE_COMMENTS);
