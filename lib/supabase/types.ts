@@ -567,12 +567,12 @@ export type Database = {
         Row: {
           comment: string | null
           created_at: string
-          healthiness_score: number | null
           id: string
           menu_item_id: string
+          nutrition_score: number | null
+          presentation_score: number | null
           score: number
           taste_score: number | null
-          uniqueness_score: number | null
           updated_at: string
           user_id: string
           value_score: number | null
@@ -580,12 +580,12 @@ export type Database = {
         Insert: {
           comment?: string | null
           created_at?: string
-          healthiness_score?: number | null
           id?: string
           menu_item_id: string
+          nutrition_score?: number | null
+          presentation_score?: number | null
           score: number
           taste_score?: number | null
-          uniqueness_score?: number | null
           updated_at?: string
           user_id: string
           value_score?: number | null
@@ -593,12 +593,12 @@ export type Database = {
         Update: {
           comment?: string | null
           created_at?: string
-          healthiness_score?: number | null
           id?: string
           menu_item_id?: string
+          nutrition_score?: number | null
+          presentation_score?: number | null
           score?: number
           taste_score?: number | null
-          uniqueness_score?: number | null
           updated_at?: string
           user_id?: string
           value_score?: number | null
@@ -873,10 +873,10 @@ export type Database = {
     Views: {
       brand_item_ratings: {
         Row: {
-          avg_healthiness_score: number | null
+          avg_nutrition_score: number | null
+          avg_presentation_score: number | null
           avg_score: number | null
           avg_taste_score: number | null
-          avg_uniqueness_score: number | null
           avg_value_score: number | null
           brand_id: string | null
           item_name: string | null
@@ -894,10 +894,10 @@ export type Database = {
       }
       menu_item_ratings: {
         Row: {
-          avg_healthiness_score: number | null
+          avg_nutrition_score: number | null
+          avg_presentation_score: number | null
           avg_score: number | null
           avg_taste_score: number | null
-          avg_uniqueness_score: number | null
           avg_value_score: number | null
           menu_item_id: string | null
           rating_count: number | null

@@ -10,8 +10,8 @@ type RatingAggregate = {
   rating_count: number | null;
   avg_taste_score: number | null;
   avg_value_score: number | null;
-  avg_uniqueness_score: number | null;
-  avg_healthiness_score: number | null;
+  avg_presentation_score: number | null;
+  avg_nutrition_score: number | null;
 } | null;
 
 export type FilterableMenuItem = {

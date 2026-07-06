@@ -71,8 +71,8 @@ async function main() {
     score: r.score,
     taste_score: nearbyScore(r.score),
     value_score: nearbyScore(r.score),
-    uniqueness_score: nearbyScore(r.score),
-    healthiness_score: nearbyScore(r.score),
+    presentation_score: nearbyScore(r.score),
+    nutrition_score: nearbyScore(r.score),
   }));
 
   const chunkSize = 500;

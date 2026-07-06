@@ -41,7 +41,7 @@ export async function getRatingsForItem(supabase: TypedClient, itemId: string) {
   const { data, error } = await supabase
     .from("ratings")
     .select(
-      "id, score, comment, taste_score, value_score, uniqueness_score, healthiness_score, created_at, user:profiles(display_name)",
+      "id, score, comment, taste_score, value_score, presentation_score, nutrition_score, created_at, user:profiles(display_name)",
     )
     .eq("menu_item_id", itemId)
     .order("created_at", { ascending: false })
@@ -54,7 +54,7 @@ export async function getRatingsForItem(supabase: TypedClient, itemId: string) {
 export async function getUserRating(supabase: TypedClient, itemId: string, userId: string) {
   const { data, error } = await supabase
     .from("ratings")
-    .select("score, comment, taste_score, value_score, uniqueness_score, healthiness_score")
+    .select("score, comment, taste_score, value_score, presentation_score, nutrition_score")
     .eq("menu_item_id", itemId)
     .eq("user_id", userId)
     .maybeSingle();

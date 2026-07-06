@@ -6,10 +6,10 @@ import { submitRating, type RatingActionState } from "@/lib/ratings/actions";
 const initialState: RatingActionState = {};
 
 const SUB_CATEGORIES = [
-  { field: "taste_score", label: "Taste" },
-  { field: "value_score", label: "Value (price for what you got)" },
-  { field: "uniqueness_score", label: "Uniqueness" },
-  { field: "healthiness_score", label: "Healthiness" },
+  { field: "taste_score", label: "Plate Taste" },
+  { field: "value_score", label: "Plate Value" },
+  { field: "presentation_score", label: "Plate Presentation" },
+  { field: "nutrition_score", label: "Plate Nutrition" },
 ] as const;
 
 type ExistingRating = {
@@ -17,8 +17,8 @@ type ExistingRating = {
   comment: string | null;
   taste_score: number | null;
   value_score: number | null;
-  uniqueness_score: number | null;
-  healthiness_score: number | null;
+  presentation_score: number | null;
+  nutrition_score: number | null;
 } | null;
 
 function ScoreSelect({

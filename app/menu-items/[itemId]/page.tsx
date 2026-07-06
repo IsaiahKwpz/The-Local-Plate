@@ -14,10 +14,10 @@ import { PhotoUploadForm } from "@/components/photo-upload-form";
 import { PhotoGallery } from "@/components/photo-gallery";
 
 const SUB_SCORE_LABELS = [
-  { field: "taste_score", label: "Taste" },
-  { field: "value_score", label: "Value" },
-  { field: "uniqueness_score", label: "Uniqueness" },
-  { field: "healthiness_score", label: "Healthiness" },
+  { field: "taste_score", label: "Plate Taste" },
+  { field: "value_score", label: "Plate Value" },
+  { field: "presentation_score", label: "Plate Presentation" },
+  { field: "nutrition_score", label: "Plate Nutrition" },
 ] as const;
 
 export default async function MenuItemPage({

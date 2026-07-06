@@ -8,7 +8,7 @@ export type RatingActionState = {
   success?: boolean;
 };
 
-const SUB_SCORE_FIELDS = ["taste_score", "value_score", "uniqueness_score", "healthiness_score"] as const;
+const SUB_SCORE_FIELDS = ["taste_score", "value_score", "presentation_score", "nutrition_score"] as const;
 
 function readScore(formData: FormData, field: string): number | null {
   const raw = formData.get(field);

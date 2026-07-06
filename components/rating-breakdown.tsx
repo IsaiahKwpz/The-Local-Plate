@@ -1,15 +1,15 @@
 type CategoryAggregate = {
   avg_taste_score: number | null;
   avg_value_score: number | null;
-  avg_uniqueness_score: number | null;
-  avg_healthiness_score: number | null;
+  avg_presentation_score: number | null;
+  avg_nutrition_score: number | null;
 } | null;
 
 const CATEGORIES = [
-  { field: "avg_taste_score", label: "Taste" },
-  { field: "avg_value_score", label: "Value" },
-  { field: "avg_uniqueness_score", label: "Uniqueness" },
-  { field: "avg_healthiness_score", label: "Healthiness" },
+  { field: "avg_taste_score", label: "Plate Taste" },
+  { field: "avg_value_score", label: "Plate Value" },
+  { field: "avg_presentation_score", label: "Plate Presentation" },
+  { field: "avg_nutrition_score", label: "Plate Nutrition" },
 ] as const;
 
 export function RatingBreakdown({ rating }: { rating: CategoryAggregate }) {
