@@ -41,7 +41,7 @@ export function LocationSnapshot({
         touchZoom: false,
         boxZoom: false,
         keyboard: false,
-      }).setView([lat, lng], 13);
+      }).setView([lat, lng], 12);
       mapRef.current = map;
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
