@@ -12,6 +12,7 @@ import { OwnerApprovalToggle } from "@/components/owner-approval-toggle";
 import { PhotoUploadForm } from "@/components/photo-upload-form";
 import { PhotoGallery } from "@/components/photo-gallery";
 import { AddDishButton } from "@/components/add-dish-button";
+import { MenuCategoryFilter } from "@/components/menu-category-filter";
 
 export default async function RestaurantPage({
   params,
@@ -99,48 +100,53 @@ export default async function RestaurantPage({
           {items.length === 0 ? (
             <p className="mt-8 text-ink-soft">No menu items yet.</p>
           ) : (
-            Array.from(categories.entries()).map(([category, categoryItems]) => (
-              <section key={category} className="mt-8">
-                <h2 className="mb-3 font-display text-lg font-bold text-ink">{category}</h2>
-                <ul className="flex flex-col gap-4">
-                  {categoryItems.map((item) => (
-                    <li key={item.id} className="rounded border border-rule bg-surface p-4">
-                      <div className="flex items-baseline justify-between gap-4">
-                        <Link
-                          href={`/menu-items/${item.id}`}
-                          className={`font-medium underline ${!item.is_active ? "text-ink-soft" : "text-ink"}`}
-                        >
-                          {item.name}
-                        </Link>
-                        {item.price != null && (
-                          <span className="text-sm text-ink-soft">
-                            ${item.price.toFixed(2)} {item.currency}
-                          </span>
-                        )}
-                      </div>
-                      {!item.is_active && <p className="text-xs text-ink-soft">No longer on the menu</p>}
-                      {item.description && <p className="text-sm text-ink-soft">{item.description}</p>}
-                      <div className="mt-2 flex flex-col gap-1">
-                        <RatingBadge
-                          rating={item.locationRating}
-                          label={isChain ? "This location" : undefined}
-                        />
-                        <RatingBreakdown rating={item.locationRating} />
-                        {isChain && (
-                          <>
+            <MenuCategoryFilter
+              sections={Array.from(categories.entries()).map(([category, categoryItems]) => ({
+                category,
+                content: (
+                  <section className="mt-6">
+                    <h2 className="mb-3 font-display text-lg font-bold text-ink">{category}</h2>
+                    <ul className="flex flex-col gap-4">
+                      {categoryItems.map((item) => (
+                        <li key={item.id} className="rounded border border-rule bg-surface p-4">
+                          <div className="flex items-baseline justify-between gap-4">
+                            <Link
+                              href={`/menu-items/${item.id}`}
+                              className={`font-medium underline ${!item.is_active ? "text-ink-soft" : "text-ink"}`}
+                            >
+                              {item.name}
+                            </Link>
+                            {item.price != null && (
+                              <span className="text-sm text-ink-soft">
+                                ${item.price.toFixed(2)} {item.currency}
+                              </span>
+                            )}
+                          </div>
+                          {!item.is_active && <p className="text-xs text-ink-soft">No longer on the menu</p>}
+                          {item.description && <p className="text-sm text-ink-soft">{item.description}</p>}
+                          <div className="mt-2 flex flex-col gap-1">
                             <RatingBadge
-                              rating={item.brandRating}
-                              label={`All ${restaurant.brand!.name} locations`}
+                              rating={item.locationRating}
+                              label={isChain ? "This location" : undefined}
                             />
-                            <RatingBreakdown rating={item.brandRating} />
-                          </>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ))
+                            <RatingBreakdown rating={item.locationRating} />
+                            {isChain && (
+                              <>
+                                <RatingBadge
+                                  rating={item.brandRating}
+                                  label={`All ${restaurant.brand!.name} locations`}
+                                />
+                                <RatingBreakdown rating={item.brandRating} />
+                              </>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ),
+              }))}
+            />
           )}
         </div>
 
