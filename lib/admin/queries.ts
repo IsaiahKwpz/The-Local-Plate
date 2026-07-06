@@ -190,6 +190,32 @@ export async function getPendingClaims(admin: TypedClient) {
   return data.map((claim) => ({ ...claim, createdAtLabel: new Date(claim.created_at).toLocaleString() }));
 }
 
+export async function getPendingRestaurants(admin: TypedClient) {
+  const data = await paginateAll((from, to) =>
+    admin
+      .from("pending_restaurants")
+      .select("*, submitter:profiles!pending_restaurants_submitted_by_fkey(display_name)")
+      .eq("status", "pending")
+      .order("created_at", { ascending: true })
+      .range(from, to),
+  );
+  return data.map((r) => ({ ...r, createdAtLabel: new Date(r.created_at).toLocaleString() }));
+}
+
+export async function getPendingMenuItems(admin: TypedClient) {
+  const data = await paginateAll((from, to) =>
+    admin
+      .from("pending_menu_items")
+      .select(
+        "*, restaurant:restaurants(name), submitter:profiles!pending_menu_items_submitted_by_fkey(display_name)",
+      )
+      .eq("status", "pending")
+      .order("created_at", { ascending: true })
+      .range(from, to),
+  );
+  return data.map((item) => ({ ...item, createdAtLabel: new Date(item.created_at).toLocaleString() }));
+}
+
 // Every upload lands here today, not just ones an automated scan flagged as
 // borderline - see lib/moderation/scan.ts for why (no API configured yet).
 export async function getPendingPhotos(admin: TypedClient) {

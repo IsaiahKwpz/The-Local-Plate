@@ -16,11 +16,11 @@ export function LoginForm({ next }: { next?: string }) {
         {next && <input type="hidden" name="next" value={next} />}
         <label className="flex flex-col gap-1 text-sm">
           Email
-          <input name="email" type="email" required className="rounded border px-3 py-2" />
+          <input name="email" type="email" required className="rounded border border-rule bg-surface px-3 py-2 text-ink" />
         </label>
         <label className="flex flex-col gap-1 text-sm">
           Password
-          <input name="password" type="password" required className="rounded border px-3 py-2" />
+          <input name="password" type="password" required className="rounded border border-rule bg-surface px-3 py-2 text-ink" />
         </label>
         {state.error && (
           <p role="alert" className="text-sm text-red-600">

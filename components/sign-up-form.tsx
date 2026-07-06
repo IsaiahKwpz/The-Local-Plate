@@ -21,12 +21,12 @@ export function SignUpForm({ next }: { next?: string }) {
             required
             minLength={2}
             maxLength={40}
-            className="rounded border px-3 py-2"
+            className="rounded border border-rule bg-surface px-3 py-2 text-ink"
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
           Email
-          <input name="email" type="email" required className="rounded border px-3 py-2" />
+          <input name="email" type="email" required className="rounded border border-rule bg-surface px-3 py-2 text-ink" />
         </label>
         <label className="flex flex-col gap-1 text-sm">
           Password
@@ -35,7 +35,7 @@ export function SignUpForm({ next }: { next?: string }) {
             type="password"
             required
             minLength={6}
-            className="rounded border px-3 py-2"
+            className="rounded border border-rule bg-surface px-3 py-2 text-ink"
           />
         </label>
         {state.error && (

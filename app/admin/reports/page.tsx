@@ -7,6 +7,8 @@ import {
   getPendingTags,
   getPendingClaims,
   getPendingPhotos,
+  getPendingRestaurants,
+  getPendingMenuItems,
 } from "@/lib/admin/queries";
 import { ReportRow } from "@/components/admin/report-row";
 import { MergeForm } from "@/components/admin/merge-form";
@@ -14,6 +16,8 @@ import { PendingEditRow } from "@/components/admin/pending-edit-row";
 import { PendingTagRow } from "@/components/admin/pending-tag-row";
 import { ClaimRow } from "@/components/admin/claim-row";
 import { PhotoRow } from "@/components/admin/photo-row";
+import { PendingRestaurantRow } from "@/components/admin/pending-restaurant-row";
+import { PendingMenuItemRow } from "@/components/admin/pending-menu-item-row";
 
 export default async function AdminReportsPage() {
   const supabase = await createClient();
@@ -44,13 +48,24 @@ export default async function AdminReportsPage() {
   }
 
   const admin = createAdminClient();
-  const [reports, restaurants, pendingEdits, pendingTags, pendingClaims, pendingPhotos] = await Promise.all([
+  const [
+    reports,
+    restaurants,
+    pendingEdits,
+    pendingTags,
+    pendingClaims,
+    pendingPhotos,
+    pendingRestaurants,
+    pendingMenuItems,
+  ] = await Promise.all([
     getOpenReports(admin),
     getAllRestaurantsForMerge(admin),
     getPendingEdits(admin),
     getPendingTags(admin),
     getPendingClaims(admin),
     getPendingPhotos(admin),
+    getPendingRestaurants(admin),
+    getPendingMenuItems(admin),
   ]);
 
   return (
@@ -84,6 +99,28 @@ export default async function AdminReportsPage() {
         <ul className="mt-4 flex flex-col gap-4">
           {pendingTags.map((tag) => (
             <PendingTagRow key={tag.id} tag={tag} />
+          ))}
+        </ul>
+      )}
+
+      <h2 className="mt-12 text-xl font-semibold">Pending restaurants</h2>
+      {pendingRestaurants.length === 0 ? (
+        <p className="mt-4 text-gray-500">No pending restaurant submissions.</p>
+      ) : (
+        <ul className="mt-4 flex flex-col gap-4">
+          {pendingRestaurants.map((restaurant) => (
+            <PendingRestaurantRow key={restaurant.id} restaurant={restaurant} />
+          ))}
+        </ul>
+      )}
+
+      <h2 className="mt-12 text-xl font-semibold">Pending dishes</h2>
+      {pendingMenuItems.length === 0 ? (
+        <p className="mt-4 text-gray-500">No pending dish submissions.</p>
+      ) : (
+        <ul className="mt-4 flex flex-col gap-4">
+          {pendingMenuItems.map((item) => (
+            <PendingMenuItemRow key={item.id} item={item} />
           ))}
         </ul>
       )}

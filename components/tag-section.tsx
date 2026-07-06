@@ -37,7 +37,12 @@ export function TagSection({
       {availableTags.length > 0 && (
         <form action={applyAction} className="flex items-center gap-2 text-sm">
           <input type="hidden" name="menuItemId" value={menuItemId} />
-          <select name="tagId" required defaultValue="" className="rounded border px-2 py-1">
+          <select
+            name="tagId"
+            required
+            defaultValue=""
+            className="rounded border border-rule bg-surface px-2 py-1 text-ink"
+          >
             <option value="" disabled>
               Add a tag…
             </option>
@@ -58,8 +63,18 @@ export function TagSection({
         <p className="text-xs text-gray-500">Thanks — this needs admin approval before it&apos;s usable.</p>
       ) : proposing ? (
         <form action={proposeAction} className="flex flex-wrap items-center gap-2 text-sm">
-          <input name="name" placeholder="New tag name" required className="rounded border px-2 py-1" />
-          <select name="type" required defaultValue="dish_type" className="rounded border px-2 py-1">
+          <input
+            name="name"
+            placeholder="New tag name"
+            required
+            className="rounded border border-rule bg-surface px-2 py-1 text-ink"
+          />
+          <select
+            name="type"
+            required
+            defaultValue="dish_type"
+            className="rounded border border-rule bg-surface px-2 py-1 text-ink"
+          >
             <option value="dish_type">Dish type</option>
             <option value="cuisine">Cuisine</option>
             <option value="attribute">Attribute</option>

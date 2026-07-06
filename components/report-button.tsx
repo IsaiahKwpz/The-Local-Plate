@@ -60,7 +60,12 @@ export function ReportButton({
     <form action={formAction} className="flex flex-wrap items-center gap-2 text-xs">
       <input type="hidden" name="targetType" value={targetType} />
       <input type="hidden" name="targetId" value={targetId} />
-      <select name="reason" required defaultValue="" className="rounded border px-1 py-0.5">
+      <select
+        name="reason"
+        required
+        defaultValue=""
+        className="rounded border border-rule bg-surface px-1 py-0.5 text-ink"
+      >
         <option value="" disabled>
           Reason…
         </option>

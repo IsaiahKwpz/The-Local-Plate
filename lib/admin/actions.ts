@@ -280,6 +280,113 @@ export async function rejectRestaurantClaim(
   return { success: true };
 }
 
+export async function approvePendingRestaurant(
+  _prevState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const adminUser = await requireAdmin();
+  const pendingId = formData.get("pendingId") as string;
+
+  const admin = createAdminClient();
+  const { data: pending, error: fetchError } = await admin
+    .from("pending_restaurants")
+    .select("*")
+    .eq("id", pendingId)
+    .single();
+  if (fetchError || !pending) return { error: "Pending restaurant not found." };
+
+  const { error: insertError } = await admin.from("restaurants").insert({
+    name: pending.name,
+    address: pending.address,
+    lat: pending.lat,
+    lng: pending.lng,
+    type: "independent",
+    source: "user_submitted",
+  });
+  if (insertError) return { error: insertError.message };
+
+  const { error } = await admin
+    .from("pending_restaurants")
+    .update({ status: "approved", reviewed_at: new Date().toISOString(), reviewed_by: adminUser.id })
+    .eq("id", pendingId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/reports");
+  revalidatePath("/restaurants");
+  return { success: true };
+}
+
+export async function rejectPendingRestaurant(
+  _prevState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const adminUser = await requireAdmin();
+  const pendingId = formData.get("pendingId") as string;
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("pending_restaurants")
+    .update({ status: "rejected", reviewed_at: new Date().toISOString(), reviewed_by: adminUser.id })
+    .eq("id", pendingId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/reports");
+  return { success: true };
+}
+
+export async function approvePendingMenuItem(
+  _prevState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const adminUser = await requireAdmin();
+  const pendingId = formData.get("pendingId") as string;
+
+  const admin = createAdminClient();
+  const { data: pending, error: fetchError } = await admin
+    .from("pending_menu_items")
+    .select("*")
+    .eq("id", pendingId)
+    .single();
+  if (fetchError || !pending) return { error: "Pending dish not found." };
+
+  const { error: insertError } = await admin.from("menu_items").insert({
+    restaurant_id: pending.restaurant_id,
+    name: pending.name,
+    price: pending.price,
+    category: pending.category,
+    description: pending.description,
+  });
+  if (insertError) return { error: insertError.message };
+
+  const { error } = await admin
+    .from("pending_menu_items")
+    .update({ status: "approved", reviewed_at: new Date().toISOString(), reviewed_by: adminUser.id })
+    .eq("id", pendingId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/reports");
+  revalidatePath(`/restaurants/${pending.restaurant_id}`);
+  return { success: true };
+}
+
+export async function rejectPendingMenuItem(
+  _prevState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const adminUser = await requireAdmin();
+  const pendingId = formData.get("pendingId") as string;
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("pending_menu_items")
+    .update({ status: "rejected", reviewed_at: new Date().toISOString(), reviewed_by: adminUser.id })
+    .eq("id", pendingId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/reports");
+  return { success: true };
+}
+
 export async function approvePendingPhoto(
   _prevState: AdminActionState,
   formData: FormData,

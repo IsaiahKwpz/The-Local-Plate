@@ -5,11 +5,13 @@ import { getRestaurantWithMenu, type MenuItemWithRating } from "@/lib/restaurant
 import { getOwnClaimStatus } from "@/lib/claims/queries";
 import { getApprovedPhotosForTarget, getOwnPendingPhotosForTarget } from "@/lib/photos/queries";
 import { RatingBadge } from "@/components/rating-badge";
+import { RatingBreakdown } from "@/components/rating-breakdown";
 import { ReportButton } from "@/components/report-button";
 import { ClaimRestaurantButton } from "@/components/claim-restaurant-button";
 import { OwnerApprovalToggle } from "@/components/owner-approval-toggle";
 import { PhotoUploadForm } from "@/components/photo-upload-form";
 import { PhotoGallery } from "@/components/photo-gallery";
+import { AddDishButton } from "@/components/add-dish-button";
 
 export default async function RestaurantPage({
   params,
@@ -49,94 +51,103 @@ export default async function RestaurantPage({
   }
 
   const isChain = restaurant.type === "chain" && restaurant.brand !== null;
+  const currentPath = `/restaurants/${restaurant.id}`;
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-12">
-      <h1 className="text-2xl font-semibold">{restaurant.name}</h1>
-      <p className="text-sm text-gray-500">{restaurant.address}</p>
-      {restaurant.status !== "active" && (
-        <span className="mt-2 inline-block rounded bg-yellow-100 px-2 py-0.5 text-xs">
-          {restaurant.status.replace("_", " ")}
-        </span>
-      )}
-      <div className="mt-2 flex flex-wrap items-center gap-3">
-        <ReportButton
-          targetType="restaurant"
-          targetId={restaurant.id}
-          isSignedIn={!!user}
-          currentPath={`/restaurants/${restaurant.id}`}
-        />
-        {restaurant.owner_user_id ? (
-          <span className="text-xs text-gray-500">✓ Verified owner</span>
-        ) : (
-          <ClaimRestaurantButton
-            restaurantId={restaurant.id}
-            isSignedIn={!!user}
-            currentPath={`/restaurants/${restaurant.id}`}
-            initialStatus={claimStatus}
-          />
-        )}
-        <PhotoUploadForm
-          targetType="restaurant"
-          targetId={restaurant.id}
-          isSignedIn={!!user}
-          currentPath={`/restaurants/${restaurant.id}`}
-        />
-      </div>
-      {isOwner && (
-        <OwnerApprovalToggle
-          restaurantId={restaurant.id}
-          requireOwnerApproval={restaurant.require_owner_approval}
-        />
-      )}
-      <PhotoGallery photos={photos} isSignedIn={!!user} currentPath={`/restaurants/${restaurant.id}`} />
+    <main className="mx-auto max-w-5xl px-6 py-12">
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_300px]">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-ink">{restaurant.name}</h1>
+          <p className="text-sm text-ink-soft">{restaurant.address}</p>
+          {restaurant.status !== "active" && (
+            <span className="mt-2 inline-block rounded bg-rust/20 px-2 py-0.5 text-xs text-ink">
+              {restaurant.status.replace("_", " ")}
+            </span>
+          )}
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            <ReportButton
+              targetType="restaurant"
+              targetId={restaurant.id}
+              isSignedIn={!!user}
+              currentPath={currentPath}
+            />
+            {restaurant.owner_user_id ? (
+              <span className="text-xs text-ink-soft">✓ Verified owner</span>
+            ) : (
+              <ClaimRestaurantButton
+                restaurantId={restaurant.id}
+                isSignedIn={!!user}
+                currentPath={currentPath}
+                initialStatus={claimStatus}
+              />
+            )}
+            <PhotoUploadForm
+              targetType="restaurant"
+              targetId={restaurant.id}
+              isSignedIn={!!user}
+              currentPath={currentPath}
+            />
+            <AddDishButton restaurantId={restaurant.id} isSignedIn={!!user} currentPath={currentPath} />
+          </div>
+          {isOwner && (
+            <OwnerApprovalToggle
+              restaurantId={restaurant.id}
+              requireOwnerApproval={restaurant.require_owner_approval}
+            />
+          )}
 
-      {items.length === 0 ? (
-        <p className="mt-8 text-gray-500">No menu items yet.</p>
-      ) : (
-        Array.from(categories.entries()).map(([category, categoryItems]) => (
-          <section key={category} className="mt-8">
-            <h2 className="mb-3 text-lg font-medium">{category}</h2>
-            <ul className="flex flex-col gap-4">
-              {categoryItems.map((item) => (
-                <li key={item.id} className="rounded border p-4">
-                  <div className="flex items-baseline justify-between gap-4">
-                    <Link
-                      href={`/menu-items/${item.id}`}
-                      className={`font-medium underline ${!item.is_active ? "text-gray-400" : ""}`}
-                    >
-                      {item.name}
-                    </Link>
-                    {item.price != null && (
-                      <span className="text-sm text-gray-500">
-                        ${item.price.toFixed(2)} {item.currency}
-                      </span>
-                    )}
-                  </div>
-                  {!item.is_active && (
-                    <p className="text-xs text-gray-400">No longer on the menu</p>
-                  )}
-                  {item.description && (
-                    <p className="text-sm text-gray-600">{item.description}</p>
-                  )}
-                  <div className="mt-2 flex flex-col gap-1">
-                    <RatingBadge
-                      rating={item.locationRating}
-                      label={isChain ? "This location" : undefined}
-                    />
-                    {isChain && (
-                      <RatingBadge
-                        rating={item.brandRating}
-                        label={`All ${restaurant.brand!.name} locations`}
-                      />
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))
-      )}
+          {items.length === 0 ? (
+            <p className="mt-8 text-ink-soft">No menu items yet.</p>
+          ) : (
+            Array.from(categories.entries()).map(([category, categoryItems]) => (
+              <section key={category} className="mt-8">
+                <h2 className="mb-3 font-display text-lg font-bold text-ink">{category}</h2>
+                <ul className="flex flex-col gap-4">
+                  {categoryItems.map((item) => (
+                    <li key={item.id} className="rounded border border-rule bg-surface p-4">
+                      <div className="flex items-baseline justify-between gap-4">
+                        <Link
+                          href={`/menu-items/${item.id}`}
+                          className={`font-medium underline ${!item.is_active ? "text-ink-soft" : "text-ink"}`}
+                        >
+                          {item.name}
+                        </Link>
+                        {item.price != null && (
+                          <span className="text-sm text-ink-soft">
+                            ${item.price.toFixed(2)} {item.currency}
+                          </span>
+                        )}
+                      </div>
+                      {!item.is_active && <p className="text-xs text-ink-soft">No longer on the menu</p>}
+                      {item.description && <p className="text-sm text-ink-soft">{item.description}</p>}
+                      <div className="mt-2 flex flex-col gap-1">
+                        <RatingBadge
+                          rating={item.locationRating}
+                          label={isChain ? "This location" : undefined}
+                        />
+                        <RatingBreakdown rating={item.locationRating} />
+                        {isChain && (
+                          <>
+                            <RatingBadge
+                              rating={item.brandRating}
+                              label={`All ${restaurant.brand!.name} locations`}
+                            />
+                            <RatingBreakdown rating={item.brandRating} />
+                          </>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))
+          )}
+        </div>
+
+        <aside>
+          <PhotoGallery photos={photos} isSignedIn={!!user} currentPath={currentPath} />
+        </aside>
+      </div>
     </main>
   );
 }

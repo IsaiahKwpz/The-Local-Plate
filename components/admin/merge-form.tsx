@@ -16,7 +16,7 @@ export function MergeForm({
     <form action={formAction} className="flex flex-col gap-3 rounded border p-4">
       <label className="flex flex-col gap-1 text-sm">
         Keep this restaurant
-        <select name="primaryId" required defaultValue="" className="rounded border px-3 py-2">
+        <select name="primaryId" required defaultValue="" className="rounded border border-rule bg-surface px-3 py-2 text-ink">
           <option value="" disabled>
             Choose…
           </option>
@@ -29,7 +29,7 @@ export function MergeForm({
       </label>
       <label className="flex flex-col gap-1 text-sm">
         Merge away (deleted after merging)
-        <select name="duplicateId" required defaultValue="" className="rounded border px-3 py-2">
+        <select name="duplicateId" required defaultValue="" className="rounded border border-rule bg-surface px-3 py-2 text-ink">
           <option value="" disabled>
             Choose…
           </option>

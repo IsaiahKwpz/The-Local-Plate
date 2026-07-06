@@ -13,22 +13,17 @@ export default async function RestaurantsPage() {
       {restaurants.length === 0 ? (
         <p className="mt-6 text-ink-soft">No restaurants yet.</p>
       ) : (
-        <ul className="mt-6">
+        <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {restaurants.map((restaurant) => (
-            <li
-              key={restaurant.id}
-              className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-dashed border-rule py-4"
-            >
-              <div>
-                <Link
-                  href={`/restaurants/${restaurant.id}`}
-                  className="font-display font-bold hover:underline"
-                >
-                  {restaurant.name}
-                </Link>
-                <p className="text-sm text-ink-soft">{restaurant.address}</p>
-              </div>
-              <div className="flex gap-2 text-xs">
+            <li key={restaurant.id} className="rounded border border-rule bg-surface p-4">
+              <Link
+                href={`/restaurants/${restaurant.id}`}
+                className="font-display font-bold hover:underline"
+              >
+                {restaurant.name}
+              </Link>
+              <p className="text-sm text-ink-soft">{restaurant.address}</p>
+              <div className="mt-2 flex gap-2 text-xs">
                 <span className="rounded-full border border-rule px-2 py-0.5 text-ink-soft">
                   {restaurant.type === "independent" ? "Independent" : "Chain"}
                 </span>
@@ -46,9 +41,14 @@ export default async function RestaurantsPage() {
   );
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-12">
+    <main className="mx-auto w-full max-w-6xl px-6 py-12">
       <h1 className="font-display text-2xl font-bold">Restaurants</h1>
-      <p className="mt-1 text-sm text-ink-soft">{restaurants.length} on the list, Ottawa</p>
+      <p className="mt-1 text-sm text-ink-soft">
+        {restaurants.length} on the list, Ottawa · Don&apos;t see your favourite spot?{" "}
+        <Link href="/restaurants/new" className="underline">
+          Add a restaurant
+        </Link>
+      </p>
 
       <div className="mt-6">
         <RestaurantsViewToggle list={list} map={<RestaurantMap restaurants={restaurants} />} />

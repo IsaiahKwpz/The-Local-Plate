@@ -35,6 +35,9 @@ export async function SiteHeader() {
             />
           </form>
           <nav className="flex items-center gap-4 text-sm">
+            <Link href="/restaurants/new" className="underline decoration-white/40 underline-offset-2">
+              Add a restaurant
+            </Link>
             {user ? (
               <>
                 <span>{displayName}</span>

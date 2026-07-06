@@ -261,6 +261,124 @@ export type Database = {
           },
         ]
       }
+      pending_menu_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          price: number | null
+          restaurant_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["edit_status"]
+          submitted_by: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          price?: number | null
+          restaurant_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["edit_status"]
+          submitted_by: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          price?: number | null
+          restaurant_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["edit_status"]
+          submitted_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_menu_items_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_menu_items_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_menu_items_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pending_restaurants: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          lat: number | null
+          lng: number | null
+          name: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["edit_status"]
+          submitted_by: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          name: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["edit_status"]
+          submitted_by: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          name?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["edit_status"]
+          submitted_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_restaurants_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_restaurants_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pending_tags: {
         Row: {
           created_at: string
@@ -388,29 +506,41 @@ export type Database = {
         Row: {
           comment: string | null
           created_at: string
+          healthiness_score: number | null
           id: string
           menu_item_id: string
           score: number
+          taste_score: number | null
+          uniqueness_score: number | null
           updated_at: string
           user_id: string
+          value_score: number | null
         }
         Insert: {
           comment?: string | null
           created_at?: string
+          healthiness_score?: number | null
           id?: string
           menu_item_id: string
           score: number
+          taste_score?: number | null
+          uniqueness_score?: number | null
           updated_at?: string
           user_id: string
+          value_score?: number | null
         }
         Update: {
           comment?: string | null
           created_at?: string
+          healthiness_score?: number | null
           id?: string
           menu_item_id?: string
           score?: number
+          taste_score?: number | null
+          uniqueness_score?: number | null
           updated_at?: string
           user_id?: string
+          value_score?: number | null
         }
         Relationships: [
           {
@@ -637,7 +767,11 @@ export type Database = {
     Views: {
       brand_item_ratings: {
         Row: {
+          avg_healthiness_score: number | null
           avg_score: number | null
+          avg_taste_score: number | null
+          avg_uniqueness_score: number | null
+          avg_value_score: number | null
           brand_id: string | null
           item_name: string | null
           rating_count: number | null
@@ -654,7 +788,11 @@ export type Database = {
       }
       menu_item_ratings: {
         Row: {
+          avg_healthiness_score: number | null
           avg_score: number | null
+          avg_taste_score: number | null
+          avg_uniqueness_score: number | null
+          avg_value_score: number | null
           menu_item_id: string | null
           rating_count: number | null
         }
@@ -806,7 +944,7 @@ export type Database = {
       menu_item_status: "unverified" | "confirmed"
       report_status: "open" | "dismissed" | "removed"
       report_target_type: "menu_item" | "restaurant" | "rating" | "photo"
-      restaurant_source: "scraped" | "claimed"
+      restaurant_source: "scraped" | "claimed" | "user_submitted"
       restaurant_status: "active" | "closed" | "temporarily_closed"
       restaurant_type: "independent" | "chain"
       tag_type: "dish_type" | "cuisine" | "attribute"
@@ -944,7 +1082,7 @@ export const Constants = {
       menu_item_status: ["unverified", "confirmed"],
       report_status: ["open", "dismissed", "removed"],
       report_target_type: ["menu_item", "restaurant", "rating", "photo"],
-      restaurant_source: ["scraped", "claimed"],
+      restaurant_source: ["scraped", "claimed", "user_submitted"],
       restaurant_status: ["active", "closed", "temporarily_closed"],
       restaurant_type: ["independent", "chain"],
       tag_type: ["dish_type", "cuisine", "attribute"],

@@ -122,7 +122,14 @@ export async function getRestaurantsPreview(supabase: TypedClient, limit = 6) {
   return deduped.slice(0, limit);
 }
 
-type RatingAggregate = { avg_score: number | null; rating_count: number | null };
+type RatingAggregate = {
+  avg_score: number | null;
+  rating_count: number | null;
+  avg_taste_score: number | null;
+  avg_value_score: number | null;
+  avg_uniqueness_score: number | null;
+  avg_healthiness_score: number | null;
+};
 
 export type MenuItemWithRating = Database["public"]["Tables"]["menu_items"]["Row"] & {
   locationRating: RatingAggregate | null;

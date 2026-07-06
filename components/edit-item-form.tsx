@@ -15,11 +15,11 @@ export function EditItemForm({
   const [state, formAction, pending] = useActionState(submitMenuItemEdit, initialState);
 
   return (
-    <form action={formAction} className="flex flex-col gap-3 rounded border p-4">
+    <form action={formAction} className="flex flex-col gap-3 rounded border border-rule bg-surface p-4">
       <input type="hidden" name="menuItemId" value={menuItemId} />
       <label className="flex flex-col gap-1 text-sm">
         Name
-        <input name="name" defaultValue={item.name} required className="rounded border px-3 py-2" />
+        <input name="name" defaultValue={item.name} required className="rounded border border-rule bg-surface px-3 py-2 text-ink" />
       </label>
       <label className="flex flex-col gap-1 text-sm">
         Price
@@ -29,7 +29,7 @@ export function EditItemForm({
           step="0.01"
           min="0"
           defaultValue={item.price ?? ""}
-          className="rounded border px-3 py-2"
+          className="rounded border border-rule bg-surface px-3 py-2 text-ink"
         />
       </label>
       <label className="flex flex-col gap-1 text-sm">
@@ -37,7 +37,7 @@ export function EditItemForm({
         <input
           name="category"
           defaultValue={item.category ?? ""}
-          className="rounded border px-3 py-2"
+          className="rounded border border-rule bg-surface px-3 py-2 text-ink"
         />
       </label>
       <label className="flex flex-col gap-1 text-sm">
@@ -46,7 +46,7 @@ export function EditItemForm({
           name="description"
           defaultValue={item.description ?? ""}
           rows={3}
-          className="rounded border px-3 py-2"
+          className="rounded border border-rule bg-surface px-3 py-2 text-ink"
         />
       </label>
       {state.error && (

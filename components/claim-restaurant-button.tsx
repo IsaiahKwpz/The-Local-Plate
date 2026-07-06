@@ -55,7 +55,7 @@ export function ClaimRestaurantButton({
         name="message"
         placeholder="How can we verify you're the owner? (e.g. business email, phone number)"
         rows={2}
-        className="w-full rounded border px-2 py-1"
+        className="w-full rounded border border-rule bg-surface px-2 py-1 text-ink"
       />
       <div className="flex items-center gap-2">
         <button type="submit" disabled={pending} className="underline">
