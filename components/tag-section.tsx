@@ -27,7 +27,7 @@ export function TagSection({
           <span className="text-sm text-gray-500">No tags yet.</span>
         ) : (
           appliedTags.map((tag) => (
-            <span key={tag.id} className="rounded bg-gray-100 px-2 py-0.5 text-xs">
+            <span key={tag.id} className="rounded bg-ground px-2 py-0.5 text-xs text-ink">
               {tag.name}
             </span>
           ))
