@@ -102,7 +102,6 @@ export default async function RestaurantPage({
             </span>
           )}
           <div className="mt-2 flex flex-wrap items-center gap-3">
-            <LocationPopoutButton lat={restaurant.lat} lng={restaurant.lng} address={restaurant.address} />
             <ReportButton
               targetType="restaurant"
               targetId={restaurant.id}
@@ -119,6 +118,9 @@ export default async function RestaurantPage({
                 initialStatus={claimStatus}
               />
             )}
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <LocationPopoutButton lat={restaurant.lat} lng={restaurant.lng} address={restaurant.address} />
             <PhotoUploadForm
               targetType="restaurant"
               targetId={restaurant.id}

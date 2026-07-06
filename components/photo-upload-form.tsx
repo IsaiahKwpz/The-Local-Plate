@@ -21,7 +21,7 @@ export function PhotoUploadForm({
   const [state, formAction, pending] = useActionState(submitPhoto, initialState);
 
   if (state.success) {
-    return <p className="text-xs text-gray-500">Thanks — your photo is pending review.</p>;
+    return <p className="text-sm text-ink-soft">Thanks — your photo is pending review.</p>;
   }
 
   if (!open) {
@@ -29,7 +29,7 @@ export function PhotoUploadForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-xs text-gray-500 underline"
+        className="rounded border border-rule px-3 py-1.5 text-sm text-ink transition hover:border-olive"
       >
         Add a photo
       </button>
@@ -38,7 +38,7 @@ export function PhotoUploadForm({
 
   if (!isSignedIn) {
     return (
-      <p className="text-xs text-gray-500">
+      <p className="text-sm text-ink-soft">
         <Link href={`/login?next=${encodeURIComponent(currentPath)}`} className="underline">
           Sign in
         </Link>{" "}
@@ -48,7 +48,10 @@ export function PhotoUploadForm({
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-2 text-xs">
+    <form
+      action={formAction}
+      className="flex flex-col gap-3 rounded border border-rule bg-surface p-4 text-sm"
+    >
       <input type="hidden" name="targetType" value={targetType} />
       <input type="hidden" name="targetId" value={targetId} />
       <input
@@ -56,21 +59,29 @@ export function PhotoUploadForm({
         name="photo"
         accept="image/jpeg,image/png,image/webp"
         required
-        className="text-xs"
+        className="text-ink"
       />
-      <label className="flex items-center gap-2">
+      <label className="flex items-center gap-2 text-ink-soft">
         <input type="checkbox" name="agreedToRights" required />
         I own this photo or have permission to share it.
       </label>
-      <div className="flex items-center gap-2">
-        <button type="submit" disabled={pending} className="underline">
+      {state.error && (
+        <p role="alert" className="text-rust">
+          {state.error}
+        </p>
+      )}
+      <div className="flex items-center gap-3">
+        <button
+          type="submit"
+          disabled={pending}
+          className="rounded bg-olive px-4 py-2 font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+        >
           {pending ? "Uploading…" : "Upload"}
         </button>
-        <button type="button" onClick={() => setOpen(false)} className="text-gray-400">
+        <button type="button" onClick={() => setOpen(false)} className="text-ink-soft underline">
           Cancel
         </button>
       </div>
-      {state.error && <span className="text-red-600">{state.error}</span>}
     </form>
   );
 }
