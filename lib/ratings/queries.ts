@@ -51,6 +51,26 @@ export async function getRatingsForItem(supabase: TypedClient, itemId: string) {
   return data;
 }
 
+// Batched form of getRatingsForItem, for a whole brand's worth of menu_item
+// rows at once (powers the brand dish page's "reviews from every location"
+// section) - the caller matches each returned rating's menu_item_id back to
+// a location to show which restaurant it came from.
+export async function getRatingsForItems(supabase: TypedClient, menuItemIds: string[]) {
+  if (menuItemIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("ratings")
+    .select(
+      "id, menu_item_id, score, comment, taste_score, value_score, presentation_score, nutrition_score, created_at, user:profiles(display_name)",
+    )
+    .in("menu_item_id", menuItemIds)
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) throw error;
+  return data;
+}
+
 export async function getUserRating(supabase: TypedClient, itemId: string, userId: string) {
   const { data, error } = await supabase
     .from("ratings")

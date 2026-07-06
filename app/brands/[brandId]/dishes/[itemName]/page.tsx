@@ -2,7 +2,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getBrandDishLocations } from "@/lib/restaurants/queries";
+import { getRatingsForItems } from "@/lib/ratings/queries";
 import { RatingBadge } from "@/components/rating-badge";
+
+const SUB_SCORE_LABELS = [
+  { field: "taste_score", label: "Plate Taste" },
+  { field: "value_score", label: "Plate Value" },
+  { field: "presentation_score", label: "Plate Presentation" },
+  { field: "nutrition_score", label: "Plate Nutrition" },
+] as const;
 
 export default async function BrandDishPage({
   params,
@@ -16,6 +24,12 @@ export default async function BrandDishPage({
   const result = await getBrandDishLocations(supabase, brandId, itemName).catch(() => null);
   if (!result || result.locations.length === 0) notFound();
   const { brand, brandRating, locations } = result;
+
+  const restaurantNameByItemId = new Map(locations.map((l) => [l.menuItemId, l.restaurantName]));
+  const reviews = await getRatingsForItems(
+    supabase,
+    locations.map((l) => l.menuItemId),
+  );
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
@@ -63,6 +77,46 @@ export default async function BrandDishPage({
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="mb-3 font-display text-lg font-bold">Reviews ({reviews.length})</h2>
+        {reviews.length === 0 ? (
+          <p className="text-sm text-ink-soft">No reviews yet at any location — be the first.</p>
+        ) : (
+          <ul className="flex flex-col gap-3">
+            {reviews.map((r) => {
+              const subScores = SUB_SCORE_LABELS.filter(({ field }) => r[field] != null);
+              return (
+                <li key={r.id} className="rounded border border-rule bg-surface p-4">
+                  <div className="flex items-baseline justify-between gap-4">
+                    <span className="font-medium text-ink">{r.user?.display_name ?? "Anonymous"}</span>
+                    <span className="text-sm text-ink-soft" aria-label={`${r.score} out of 5`}>
+                      {"★".repeat(r.score)}
+                      {"☆".repeat(5 - r.score)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-ink-soft">
+                    at{" "}
+                    <span className="font-medium text-ink">
+                      {restaurantNameByItemId.get(r.menu_item_id) ?? "Unknown location"}
+                    </span>
+                  </p>
+                  {subScores.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-ink-soft">
+                      {subScores.map(({ field, label }) => (
+                        <span key={field}>
+                          {label} <strong className="text-ink">{r[field]}</strong>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {r.comment && <p className="mt-1 text-sm text-ink-soft">{r.comment}</p>}
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </section>
     </main>
   );
