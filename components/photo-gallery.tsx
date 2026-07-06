@@ -5,12 +5,16 @@ export function PhotoGallery({
   photos,
   isSignedIn,
   currentPath,
+  size = "sm",
 }: {
   photos: PhotoWithUrl[];
   isSignedIn: boolean;
   currentPath: string;
+  size?: "sm" | "lg";
 }) {
   if (photos.length === 0) return null;
+
+  const imageSize = size === "lg" ? "h-44 w-44" : "h-24 w-24";
 
   return (
     <div className="mt-3 flex flex-wrap gap-3">
@@ -21,7 +25,7 @@ export function PhotoGallery({
           <img
             src={photo.url}
             alt=""
-            className={`h-24 w-24 rounded object-cover ${photo.status !== "approved" ? "opacity-50" : ""}`}
+            className={`${imageSize} rounded object-cover ${photo.status !== "approved" ? "opacity-50" : ""}`}
           />
           {photo.status === "approved" ? (
             <ReportButton

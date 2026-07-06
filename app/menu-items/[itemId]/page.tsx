@@ -65,24 +65,46 @@ export default async function MenuItemPage({
         <div>
           <h1 className="font-display text-2xl font-bold text-ink">{item.name}</h1>
           {!item.is_active && <p className="text-xs text-ink-soft">No longer on the menu</p>}
-          {item.description && <p className="mt-1 text-ink-soft">{item.description}</p>}
-          {item.price != null && (
-            <p className="mt-1 text-sm text-ink-soft">
-              ${item.price.toFixed(2)} {item.currency}
-            </p>
+
+          <div className="mt-4">
+            <PhotoGallery
+              photos={photos}
+              isSignedIn={!!user}
+              currentPath={`/menu-items/${item.id}`}
+              size="lg"
+            />
+            {photos.length === 0 && <p className="text-sm text-ink-soft">No photos yet.</p>}
+          </div>
+
+          {item.description ? (
+            <p className="mt-4 text-ink-soft">{item.description}</p>
+          ) : (
+            <p className="mt-4 text-sm text-ink-soft italic">No description yet.</p>
           )}
 
-          <div className="mt-4 flex flex-col gap-2">
-            <div>
-              <RatingBadge rating={locationRating} label={isChain ? "This location" : undefined} />
-              <RatingBreakdown rating={locationRating} />
-            </div>
-            {isChain && (
-              <div>
-                <RatingBadge rating={brandRating} label={`All ${restaurant.brand!.name} locations`} />
-                <RatingBreakdown rating={brandRating} />
-              </div>
+          <div className="mt-4 flex flex-wrap items-center gap-3 rounded border border-rule bg-surface p-4">
+            {item.price != null && (
+              <span className="text-lg font-semibold text-ink">
+                ${item.price.toFixed(2)} {item.currency}
+              </span>
             )}
+            {item.category && (
+              <span className="rounded-full border border-rule px-3 py-1 text-xs text-ink-soft">
+                {item.category}
+              </span>
+            )}
+            <div className="flex flex-col gap-2">
+              <div>
+                <RatingBadge rating={locationRating} label={isChain ? "This location" : undefined} />
+                <RatingBreakdown rating={locationRating} />
+              </div>
+              {isChain && (
+                <div>
+                  <RatingBadge rating={brandRating} label={`All ${restaurant.brand!.name} locations`} />
+                  <RatingBreakdown rating={brandRating} />
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -153,8 +175,6 @@ export default async function MenuItemPage({
         </div>
 
         <aside className="flex flex-col gap-8">
-          <PhotoGallery photos={photos} isSignedIn={!!user} currentPath={`/menu-items/${item.id}`} />
-
           <section>
             <h2 className="mb-3 font-display text-lg font-bold text-ink">Ratings ({ratings.length})</h2>
             {ratings.length === 0 ? (
