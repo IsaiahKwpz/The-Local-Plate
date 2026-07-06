@@ -10,6 +10,14 @@ export function SignUpForm({ next }: { next?: string }) {
   const [state, formAction, pending] = useActionState(signUp, initialState);
   const loginHref = next ? `/login?next=${encodeURIComponent(next)}` : "/login";
 
+  if (state.confirmationSent) {
+    return (
+      <p className="text-sm text-ink-soft">
+        Almost there — check your email for a confirmation link to finish creating your account.
+      </p>
+    );
+  }
+
   return (
     <>
       <form action={formAction} className="flex flex-col gap-4">

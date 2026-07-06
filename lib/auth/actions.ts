@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 export type AuthActionState = {
   error?: string;
   success?: boolean;
+  confirmationSent?: boolean;
 };
 
 // Only allow redirecting back to a relative in-app path (e.g. the item page
@@ -33,7 +34,7 @@ export async function signUp(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: { data: { display_name: displayName } },
@@ -41,6 +42,14 @@ export async function signUp(
 
   if (error) {
     return { error: error.message };
+  }
+
+  // Email confirmations are on (supabase/config.toml) - a brand-new signup
+  // gets a profile row via the auth.users trigger but no session until the
+  // confirmation link is clicked, so redirecting as if signed in here would
+  // silently strand the user on `next` without an actual session.
+  if (!data.session) {
+    return { confirmationSent: true };
   }
 
   revalidatePath("/", "layout");
