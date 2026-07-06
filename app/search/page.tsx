@@ -21,6 +21,7 @@ import { CategorySidebar } from "@/components/category-sidebar";
 import { SearchFilters } from "@/components/search-filters";
 import { RestaurantsViewToggle } from "@/components/restaurants-view-toggle";
 import { RestaurantMap } from "@/components/restaurant-map";
+import { FilterDrawer } from "@/components/filter-drawer";
 
 function formatDistance(km: number) {
   return km < 1 ? `${Math.round(km * 1000)} m away` : `${km.toFixed(1)} km away`;
@@ -134,7 +135,7 @@ export default async function SearchPage({
       )}
 
       <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-[220px_1fr]">
-        <aside className="flex flex-col gap-6">
+        <FilterDrawer>
           <div>
             <h2 className="mb-2 font-display text-sm font-bold uppercase tracking-wide text-ink-soft">
               Categories
@@ -191,7 +192,7 @@ export default async function SearchPage({
               locationError={locationError}
             />
           </div>
-        </aside>
+        </FilterDrawer>
 
         <div className="flex flex-col gap-8">
           {!showResults && (
