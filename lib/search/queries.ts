@@ -12,6 +12,43 @@ export async function searchRestaurants(supabase: TypedClient, query: string) {
   return data;
 }
 
+export type RestaurantSearchResult = Awaited<ReturnType<typeof searchRestaurants>>[number];
+
+export type RestaurantSearchGroup = {
+  key: string;
+  label: string;
+  isBrand: boolean;
+  brandId: string | null;
+  locations: RestaurantSearchResult[];
+};
+
+// Mirrors groupSearchResults' brand-grouping below, applied to plain
+// restaurant-name matches instead of dish matches - a chain search used to
+// show one near-identical card per location (e.g. eight "Lone Star Texas
+// Grill" rows for one Ottawa-wide search) same as the pre-grouping dish list
+// did before groupSearchResults existed.
+export function groupSearchRestaurants(restaurants: RestaurantSearchResult[]): RestaurantSearchGroup[] {
+  const groups = new Map<string, RestaurantSearchGroup>();
+
+  for (const restaurant of restaurants) {
+    const isBrand = Boolean(restaurant.brand_id);
+    const key = isBrand ? `brand:${restaurant.brand_id}` : `restaurant:${restaurant.id}`;
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        key,
+        label: isBrand ? (restaurant.brand_name ?? restaurant.name) : restaurant.name,
+        isBrand,
+        brandId: restaurant.brand_id,
+        locations: [],
+      });
+    }
+    groups.get(key)!.locations.push(restaurant);
+  }
+
+  return Array.from(groups.values()).sort((a, b) => b.locations.length - a.locations.length);
+}
+
 export async function searchMenuItems(supabase: TypedClient, query: string) {
   const { data, error } = await supabase.rpc("search_menu_items", { search_query: query });
 

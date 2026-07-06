@@ -7,6 +7,7 @@ import {
   browseMenuItems,
   getBrowseCategories,
   groupSearchResults,
+  groupSearchRestaurants,
   getBrandItemRatings,
   filterMenuItems,
   getTopRatedDishes,
@@ -18,6 +19,8 @@ import { geocodeAddress } from "@/lib/geo/geocode";
 import { RatingBadge } from "@/components/rating-badge";
 import { CategorySidebar } from "@/components/category-sidebar";
 import { SearchFilters } from "@/components/search-filters";
+import { RestaurantsViewToggle } from "@/components/restaurants-view-toggle";
+import { RestaurantMap } from "@/components/restaurant-map";
 
 function formatDistance(km: number) {
   return km < 1 ? `${Math.round(km * 1000)} m away` : `${km.toFixed(1)} km away`;
@@ -257,26 +260,74 @@ export default async function SearchPage({
               {restaurants.length === 0 ? (
                 <p className="text-sm text-ink-soft">No matching restaurants.</p>
               ) : (
-                <ul className="flex flex-col gap-3">
-                  {restaurants.map((restaurant) => (
-                    <li key={restaurant.id} className="rounded border border-rule bg-surface p-4">
-                      <div className="flex items-baseline justify-between gap-4">
-                        <Link
-                          href={`/restaurants/${restaurant.id}`}
-                          className="font-display font-bold underline"
-                        >
-                          {restaurant.name}
-                        </Link>
-                        {distanceByRestaurant.has(restaurant.id) && (
-                          <span className="text-sm text-ink-soft">
-                            {formatDistance(distanceByRestaurant.get(restaurant.id)!)}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-ink-soft">{restaurant.address}</p>
-                    </li>
-                  ))}
-                </ul>
+                <RestaurantsViewToggle
+                  list={
+                    <ul className="flex flex-col gap-3">
+                      {groupSearchRestaurants(restaurants).map((group) =>
+                        group.locations.length > 1 ? (
+                          <li key={group.key}>
+                            <details className="rounded border border-rule bg-surface open:pb-2">
+                              <summary className="flex cursor-pointer items-center justify-between gap-4 p-4 font-display font-bold">
+                                <span>{group.label}</span>
+                                <span className="text-sm font-normal text-ink-soft">
+                                  {group.locations.length} locations
+                                </span>
+                              </summary>
+                              <ul className="flex flex-col gap-3 px-4">
+                                {group.locations.map((restaurant) => (
+                                  <li key={restaurant.id} className="border-t border-dashed border-rule pt-3">
+                                    <div className="flex items-baseline justify-between gap-4">
+                                      <Link
+                                        href={`/restaurants/${restaurant.id}`}
+                                        className="font-medium underline"
+                                      >
+                                        {restaurant.name}
+                                      </Link>
+                                      {distanceByRestaurant.has(restaurant.id) && (
+                                        <span className="text-sm text-ink-soft">
+                                          {formatDistance(distanceByRestaurant.get(restaurant.id)!)}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-sm text-ink-soft">{restaurant.address}</p>
+                                  </li>
+                                ))}
+                              </ul>
+                            </details>
+                          </li>
+                        ) : (
+                          <li key={group.key} className="rounded border border-rule bg-surface p-4">
+                            <div className="flex items-baseline justify-between gap-4">
+                              <Link
+                                href={`/restaurants/${group.locations[0].id}`}
+                                className="font-display font-bold underline"
+                              >
+                                {group.locations[0].name}
+                              </Link>
+                              {distanceByRestaurant.has(group.locations[0].id) && (
+                                <span className="text-sm text-ink-soft">
+                                  {formatDistance(distanceByRestaurant.get(group.locations[0].id)!)}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-ink-soft">{group.locations[0].address}</p>
+                          </li>
+                        ),
+                      )}
+                    </ul>
+                  }
+                  map={
+                    <RestaurantMap
+                      restaurants={restaurants.map((restaurant) => ({
+                        id: restaurant.id,
+                        name: restaurant.name,
+                        address: restaurant.address,
+                        lat: restaurant.lat,
+                        lng: restaurant.lng,
+                      }))}
+                    />
+                  }
+                />
               )}
             </section>
           )}

@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -765,7 +765,11 @@ export type Database = {
         Args: { search_query: string }
         Returns: {
           address: string
+          brand_id: string
+          brand_name: string
           id: string
+          lat: number
+          lng: number
           name: string
           status: string
           type: string
