@@ -71,11 +71,18 @@ export default async function Home() {
       {localRestaurants.length > 0 && (
         <section className="mt-14">
           <div className="flex items-baseline justify-between gap-3 border-b-2 border-rule-strong pb-3">
-            <h2 className="font-display text-xl font-bold">Explore local</h2>
-            <span className="text-sm font-semibold text-ink-soft">Independent, Ottawa-owned</span>
+            <Link href="/restaurants/independent" className="font-display text-xl font-bold hover:underline">
+              Explore local
+            </Link>
+            <Link href="/restaurants/independent" className="text-sm font-semibold text-ink-soft hover:underline">
+              Independent, Ottawa-owned
+            </Link>
           </div>
           <p className="mt-3 max-w-2xl text-sm text-ink-soft">
-            Pinned up for you — kitchens owned and run right here in Ottawa, not part of any chain.
+            Pinned up for you — kitchens owned and run right here in Ottawa, not part of any chain.{" "}
+            <Link href="/restaurants/independent" className="underline">
+              See all
+            </Link>
           </p>
           <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
             {localRestaurants.map((restaurant, i) => (

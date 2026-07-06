@@ -190,6 +190,18 @@ export async function getPendingClaims(admin: TypedClient) {
   return data.map((claim) => ({ ...claim, createdAtLabel: new Date(claim.created_at).toLocaleString() }));
 }
 
+export async function getPendingRestaurantEdits(admin: TypedClient) {
+  const data = await paginateAll((from, to) =>
+    admin
+      .from("pending_restaurant_edits")
+      .select("*, restaurant:restaurants(name), user:profiles!pending_restaurant_edits_user_id_fkey(display_name)")
+      .eq("status", "pending")
+      .order("created_at", { ascending: true })
+      .range(from, to),
+  );
+  return data.map((edit) => ({ ...edit, createdAtLabel: new Date(edit.created_at).toLocaleString() }));
+}
+
 export async function getPendingRestaurants(admin: TypedClient) {
   const data = await paginateAll((from, to) =>
     admin

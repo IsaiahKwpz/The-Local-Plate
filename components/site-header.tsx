@@ -2,12 +2,18 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/lib/auth/actions";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SearchBarWithSuggestions } from "@/components/search-bar-with-suggestions";
+import { getBrowseCategories } from "@/lib/search/queries";
 
 export async function SiteHeader() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [
+    {
+      data: { user },
+    },
+    categories,
+  ] = await Promise.all([supabase.auth.getUser(), getBrowseCategories(supabase)]);
+  const popularSearches = categories.slice(0, 8);
 
   let displayName: string | null = null;
   if (user) {
@@ -26,14 +32,7 @@ export async function SiteHeader() {
           <Link href="/" className="font-display text-lg font-bold whitespace-nowrap">
             The Local <span className="text-[#E8C87E]">Plate</span>
           </Link>
-          <form action="/search" method="GET" className="max-w-sm min-w-0 flex-1">
-            <input
-              type="search"
-              name="q"
-              placeholder="Search restaurants or dishes…"
-              className="w-full rounded border border-white/25 bg-white/10 px-3 py-1.5 text-sm text-[#F3E9DC] placeholder:text-[#F3E9DC]/60 focus:outline-none focus:ring-1 focus:ring-[#E8C87E]"
-            />
-          </form>
+          <SearchBarWithSuggestions suggestions={popularSearches} />
           <nav className="flex items-center gap-4 text-sm">
             <Link href="/restaurants/new" className="underline decoration-white/40 underline-offset-2">
               Add a restaurant

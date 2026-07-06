@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/admin/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { buildMenuItemUpdate, type EditableField } from "@/lib/contributions/fields";
+import { buildMenuItemUpdate, type EditableField, type EditableRestaurantField } from "@/lib/contributions/fields";
+import { geocodeAddress } from "@/lib/geo/geocode";
+import type { Database } from "@/lib/supabase/types";
 
 export type AdminActionState = {
   error?: string;
@@ -274,6 +276,64 @@ export async function rejectRestaurantClaim(
     .from("restaurant_claims")
     .update({ status: "rejected", reviewed_at: new Date().toISOString(), reviewed_by: adminUser.id })
     .eq("id", claimId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/reports");
+  return { success: true };
+}
+
+export async function approvePendingRestaurantEdit(
+  _prevState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const adminUser = await requireAdmin();
+  const editId = formData.get("editId") as string;
+
+  const admin = createAdminClient();
+  const { data: pending, error: fetchError } = await admin
+    .from("pending_restaurant_edits")
+    .select("*")
+    .eq("id", editId)
+    .single();
+  if (fetchError || !pending) return { error: "Pending edit not found." };
+
+  const field = pending.field as EditableRestaurantField;
+  const update: Database["public"]["Tables"]["restaurants"]["Update"] = { [field]: pending.new_value };
+
+  if (field === "address") {
+    const coords = await geocodeAddress(pending.new_value);
+    if (coords) {
+      update.lat = coords.lat;
+      update.lng = coords.lng;
+    }
+  }
+
+  const { error: updateError } = await admin.from("restaurants").update(update).eq("id", pending.restaurant_id);
+  if (updateError) return { error: updateError.message };
+
+  const { error } = await admin
+    .from("pending_restaurant_edits")
+    .update({ status: "approved", reviewed_at: new Date().toISOString(), reviewed_by: adminUser.id })
+    .eq("id", editId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/reports");
+  revalidatePath(`/restaurants/${pending.restaurant_id}`);
+  return { success: true };
+}
+
+export async function rejectPendingRestaurantEdit(
+  _prevState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const adminUser = await requireAdmin();
+  const editId = formData.get("editId") as string;
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("pending_restaurant_edits")
+    .update({ status: "rejected", reviewed_at: new Date().toISOString(), reviewed_by: adminUser.id })
+    .eq("id", editId);
   if (error) return { error: error.message };
 
   revalidatePath("/admin/reports");

@@ -56,7 +56,7 @@ export default async function MenuItemPage({
   const photos = [...approvedPhotos, ...ownPendingPhotos];
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-12">
+    <main className="mx-auto max-w-7xl px-6 py-12">
       <Link href={`/restaurants/${restaurant.id}`} className="text-sm text-ink-soft underline">
         ← {restaurant.name}
       </Link>
@@ -64,14 +64,16 @@ export default async function MenuItemPage({
       <h1 className="mt-2 font-display text-2xl font-bold text-ink">{item.name}</h1>
       {!item.is_active && <p className="text-xs text-ink-soft">No longer on the menu</p>}
 
-      <div className="mt-4 rounded border border-rule bg-surface p-6">
-        <PhotoGallery photos={photos} isSignedIn={!!user} currentPath={`/menu-items/${item.id}`} size="lg" />
-        {photos.length === 0 && <p className="text-sm text-ink-soft">No photos yet.</p>}
+      <div className="mt-4 grid grid-cols-1 gap-6 rounded border border-rule bg-surface p-6 lg:grid-cols-[auto_1fr]">
+        <div>
+          <PhotoGallery photos={photos} isSignedIn={!!user} currentPath={`/menu-items/${item.id}`} size="lg" />
+          {photos.length === 0 && <p className="text-sm text-ink-soft">No photos yet.</p>}
+        </div>
 
         {item.description ? (
-          <p className="mt-4 text-ink-soft">{item.description}</p>
+          <p className="text-ink-soft">{item.description}</p>
         ) : (
-          <p className="mt-4 text-sm text-ink-soft italic">No description yet.</p>
+          <p className="text-sm text-ink-soft italic">No description yet.</p>
         )}
       </div>
 
@@ -98,6 +100,11 @@ export default async function MenuItemPage({
             </div>
           )}
         </div>
+        {ratings.length > 0 && (
+          <a href="#ratings" className="text-sm text-ink-soft underline">
+            See reviews
+          </a>
+        )}
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -115,7 +122,7 @@ export default async function MenuItemPage({
         />
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-2">
+      <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-2 xl:grid-cols-3">
         <section>
           <h2 className="mb-3 font-display text-lg font-bold text-ink">Tags</h2>
           {user ? (
@@ -168,12 +175,12 @@ export default async function MenuItemPage({
         </section>
       </div>
 
-      <section className="mt-10">
+      <section id="ratings" className="mt-10 scroll-mt-6">
         <h2 className="mb-3 font-display text-lg font-bold text-ink">Ratings ({ratings.length})</h2>
         {ratings.length === 0 ? (
           <p className="text-sm text-ink-soft">No ratings yet — be the first.</p>
         ) : (
-          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {ratings.map((r) => {
               const subScores = SUB_SCORE_LABELS.filter(({ field }) => r[field] != null);
               return (

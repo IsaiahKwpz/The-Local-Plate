@@ -92,6 +92,40 @@ export async function getExploreLocalRestaurants(supabase: TypedClient, limit = 
   return restaurants.map((r) => ({ ...r, itemCount: countByRestaurant.get(r.id) ?? 0 }));
 }
 
+// Full independent-only directory (the "Explore Local" homepage teaser only
+// shows 3) - same item-count-instead-of-rating reasoning as
+// getExploreLocalRestaurants, since freshly-ingested independents mostly
+// have no ratings yet.
+export async function getIndependentRestaurants(supabase: TypedClient) {
+  const restaurants = await paginateAll((from, to) =>
+    supabase
+      .from("restaurants")
+      .select("id, name, address")
+      .eq("type", "independent")
+      .eq("status", "active")
+      .order("name")
+      .range(from, to),
+  );
+  if (restaurants.length === 0) return [];
+
+  const ids = restaurants.map((r) => r.id);
+  const items = await paginateAll((from, to) =>
+    supabase
+      .from("menu_items")
+      .select("restaurant_id")
+      .in("restaurant_id", ids)
+      .eq("is_active", true)
+      .range(from, to),
+  );
+
+  const countByRestaurant = new Map<string, number>();
+  for (const item of items) {
+    countByRestaurant.set(item.restaurant_id, (countByRestaurant.get(item.restaurant_id) ?? 0) + 1);
+  }
+
+  return restaurants.map((r) => ({ ...r, itemCount: countByRestaurant.get(r.id) ?? 0 }));
+}
+
 // Alphabetical order clusters every location of one chain together (e.g. six
 // Boston Pizza rows in a row) - fetch a larger pool and pick one restaurant
 // per brand (plus every independent) before sampling, so the homepage

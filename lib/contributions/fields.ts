@@ -20,3 +20,6 @@ export function buildMenuItemUpdate(field: EditableField, value: string): MenuIt
       return { description: value };
   }
 }
+
+export const EDITABLE_RESTAURANT_FIELDS = ["name", "address"] as const;
+export type EditableRestaurantField = (typeof EDITABLE_RESTAURANT_FIELDS)[number];

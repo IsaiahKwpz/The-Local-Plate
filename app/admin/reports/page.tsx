@@ -9,6 +9,7 @@ import {
   getPendingPhotos,
   getPendingRestaurants,
   getPendingMenuItems,
+  getPendingRestaurantEdits,
 } from "@/lib/admin/queries";
 import { ReportRow } from "@/components/admin/report-row";
 import { MergeForm } from "@/components/admin/merge-form";
@@ -18,6 +19,7 @@ import { ClaimRow } from "@/components/admin/claim-row";
 import { PhotoRow } from "@/components/admin/photo-row";
 import { PendingRestaurantRow } from "@/components/admin/pending-restaurant-row";
 import { PendingMenuItemRow } from "@/components/admin/pending-menu-item-row";
+import { PendingRestaurantEditRow } from "@/components/admin/pending-restaurant-edit-row";
 
 export default async function AdminReportsPage() {
   const supabase = await createClient();
@@ -57,6 +59,7 @@ export default async function AdminReportsPage() {
     pendingPhotos,
     pendingRestaurants,
     pendingMenuItems,
+    pendingRestaurantEdits,
   ] = await Promise.all([
     getOpenReports(admin),
     getAllRestaurantsForMerge(admin),
@@ -66,6 +69,7 @@ export default async function AdminReportsPage() {
     getPendingPhotos(admin),
     getPendingRestaurants(admin),
     getPendingMenuItems(admin),
+    getPendingRestaurantEdits(admin),
   ]);
 
   return (
@@ -88,6 +92,17 @@ export default async function AdminReportsPage() {
         <ul className="mt-4 flex flex-col gap-4">
           {pendingEdits.map((edit) => (
             <PendingEditRow key={edit.id} edit={edit} />
+          ))}
+        </ul>
+      )}
+
+      <h2 className="mt-12 text-xl font-semibold">Pending restaurant edits</h2>
+      {pendingRestaurantEdits.length === 0 ? (
+        <p className="mt-4 text-gray-500">No pending restaurant edits.</p>
+      ) : (
+        <ul className="mt-4 flex flex-col gap-4">
+          {pendingRestaurantEdits.map((edit) => (
+            <PendingRestaurantEditRow key={edit.id} edit={edit} />
           ))}
         </ul>
       )}

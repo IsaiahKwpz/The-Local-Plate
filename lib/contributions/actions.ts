@@ -3,7 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { isLowTrust } from "@/lib/contributions/trust";
-import { EDITABLE_FIELDS, buildMenuItemUpdate, type EditableField } from "@/lib/contributions/fields";
+import {
+  EDITABLE_FIELDS,
+  buildMenuItemUpdate,
+  EDITABLE_RESTAURANT_FIELDS,
+  type EditableField,
+  type EditableRestaurantField,
+} from "@/lib/contributions/fields";
+import { geocodeAddress } from "@/lib/geo/geocode";
 import type { Database } from "@/lib/supabase/types";
 
 export type ContributionActionState = {
@@ -129,6 +136,97 @@ export async function submitMenuItemEdit(
   if (logError) return { error: logError.message };
 
   revalidatePath(`/menu-items/${menuItemId}`);
+  return { success: true, queued: false };
+}
+
+type RestaurantChange = { field: EditableRestaurantField; oldValue: string | null; newValue: string };
+
+function diffRestaurant(
+  restaurant: { name: string; address: string },
+  formData: FormData,
+): RestaurantChange[] {
+  const changes: RestaurantChange[] = [];
+
+  for (const field of EDITABLE_RESTAURANT_FIELDS) {
+    const submitted = ((formData.get(field) as string) ?? "").trim();
+    if (!submitted || submitted === restaurant[field]) continue;
+    changes.push({ field, oldValue: restaurant[field], newValue: submitted });
+  }
+
+  return changes;
+}
+
+export async function submitRestaurantEdit(
+  _prevState: ContributionActionState,
+  formData: FormData,
+): Promise<ContributionActionState> {
+  const restaurantId = formData.get("restaurantId") as string;
+  if (!restaurantId) return { error: "Missing restaurant." };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "You need to sign in to suggest an edit." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("created_at, trust_score, is_admin")
+    .eq("id", user.id)
+    .single();
+  if (!profile) return { error: "Profile not found." };
+
+  const { data: restaurant, error: restaurantError } = await supabase
+    .from("restaurants")
+    .select("name, address, owner_user_id, require_owner_approval")
+    .eq("id", restaurantId)
+    .single();
+  if (restaurantError || !restaurant) return { error: "Restaurant not found." };
+
+  const changes = diffRestaurant(restaurant, formData);
+  if (changes.length === 0) {
+    return { error: "No changes to submit." };
+  }
+
+  const isOwner = restaurant.owner_user_id === user.id;
+  const mustQueue = !isOwner && (isLowTrust(profile) || restaurant.require_owner_approval === true);
+
+  if (mustQueue) {
+    const { error } = await supabase.from("pending_restaurant_edits").insert(
+      changes.map((c) => ({
+        restaurant_id: restaurantId,
+        user_id: user.id,
+        field: c.field,
+        old_value: c.oldValue,
+        new_value: c.newValue,
+      })),
+    );
+    if (error) return { error: error.message };
+
+    return { success: true, queued: true };
+  }
+
+  const update: Database["public"]["Tables"]["restaurants"]["Update"] = {};
+  for (const c of changes) {
+    if (c.field === "name") update.name = c.newValue;
+    if (c.field === "address") update.address = c.newValue;
+  }
+
+  // Re-geocode when the address changes, so lat/lng (radius search + the
+  // location snapshot map) stay in sync with what's actually on file.
+  const addressChange = changes.find((c) => c.field === "address");
+  if (addressChange) {
+    const coords = await geocodeAddress(addressChange.newValue);
+    if (coords) {
+      update.lat = coords.lat;
+      update.lng = coords.lng;
+    }
+  }
+
+  const { error: updateError } = await supabase.from("restaurants").update(update).eq("id", restaurantId);
+  if (updateError) return { error: updateError.message };
+
+  revalidatePath(`/restaurants/${restaurantId}`);
   return { success: true, queued: false };
 }
 
